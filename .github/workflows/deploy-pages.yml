@@ -1,0 +1,53 @@
+# Builds a small site/ folder (index.html + config.js) and publishes to GitHub Pages.
+# One-time: add repository secrets SUPABASE_URL and SUPABASE_ANON_KEY (Settings → Secrets → Actions).
+# Enable Pages: Settings → Pages → Source = GitHub Actions.
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          mkdir -p site
+          cp index.html site/
+          node <<'NODE'
+          const fs = require('fs');
+          const url = process.env.SUPABASE_URL || '';
+          const key = process.env.SUPABASE_ANON_KEY || '';
+          const esc = (s) => JSON.stringify(s);
+          const body = `window.__FIFA_SUPABASE__ = { url: ${esc(url)}, anonKey: ${esc(key)} };\n`;
+          fs.writeFileSync('site/config.js', body, 'utf8');
+          NODE
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

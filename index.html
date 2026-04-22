@@ -13,6 +13,9 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .header h1 { font-size: 26px; font-weight: 800; color: #c9a84c; letter-spacing: 1px; text-transform: uppercase; }
 .header p { color: #8fa3c4; font-size: 12px; margin-top: 3px; }
 
+.sync-banner { display: none; align-items: center; gap: 12px; padding: 10px 32px; background: #0f2244; border-bottom: 1px solid #1e3358; font-size: 12px; color: #8fa3c4; }
+.sync-banner code { font-size: 11px; background: #0a1628; padding: 2px 6px; border-radius: 4px; border: 1px solid #1e3a6e; }
+
 /* TABS */
 .tab-nav { display: flex; background: #0d1f40; border-bottom: 2px solid #1e3358; padding: 0 32px; gap: 4px; }
 .tab-btn { padding: 14px 24px; cursor: pointer; font-size: 13px; font-weight: 600; color: #6a88b0; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
@@ -176,6 +179,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   .header { padding: 14px 16px; gap: 10px; flex-wrap: wrap; }
   .header h1 { font-size: 17px; letter-spacing: 0; }
   .header p { font-size: 11px; }
+  .sync-banner { padding: 10px 14px; }
 
   /* Tabs — horizontal scroll */
   .tab-nav { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0; }
@@ -250,10 +254,12 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   </div>
 </div>
 
+<div id="syncBanner" class="sync-banner" aria-live="polite"></div>
+
 <nav class="tab-nav">
-  <button class="tab-btn active" onclick="switchTab('schedule')">📅 Schedule</button>
-  <button class="tab-btn" onclick="switchTab('groups')">📊 Group Tables</button>
-  <button class="tab-btn" onclick="switchTab('bracket')">🏆 Bracket</button>
+  <button class="tab-btn active" onclick="switchTab('schedule', this)">📅 Schedule</button>
+  <button class="tab-btn" onclick="switchTab('groups', this)">📊 Group Tables</button>
+  <button class="tab-btn" onclick="switchTab('bracket', this)">🏆 Bracket</button>
 </nav>
 
 <!-- ============ SCHEDULE TAB ============ -->
@@ -328,6 +334,8 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   </div>
 </div>
 
+<script>window.__FIFA_SUPABASE__ = window.__FIFA_SUPABASE__ || {};</script>
+<script src="config.js"></script>
 <script>
 // ============================================================
 //  DATA
@@ -459,28 +467,231 @@ const FLAGS = {USA:'🇺🇸',Mexico:'🇲🇽',Canada:'🇨🇦'};
 const STAGE_ORDER = ["Group Stage","Round of 32","Round of 16","Quarterfinal","Semifinal","3rd Place Match","FINAL"];
 
 // ============================================================
-//  STATE (persisted via localStorage)
+//  STATE — localStorage per room + optional Supabase cloud
 // ============================================================
+const SB_CFG = window.__FIFA_SUPABASE__ || {};
 let SCORES = {};   // { matchId: { t1: number|null, t2: number|null } }
 let COMMENTS = {}; // { matchId: string }
+let ROOM_ID = '';
+let lastRemoteUpdated = null;
+let applyingRemote = false;
+let pushTimer = null;
+let pollTimer = null;
+let cloudUiState = 'local';
 
-function loadState() {
+function cloudEnabled() {
+  const u = String(SB_CFG.url || '').trim();
+  const k = String(SB_CFG.anonKey || '').trim();
+  return u.length > 12 && k.length > 32;
+}
+
+function lsKeyScores() { return 'fifa2026_scores_' + ROOM_ID; }
+function lsKeyComments() { return 'fifa2026_comments_' + ROOM_ID; }
+
+function ensureRoomId() {
+  const p = new URLSearchParams(location.search).get('room');
+  if (p && /^[A-Za-z0-9_-]{6,80}$/.test(p)) {
+    ROOM_ID = p;
+    return;
+  }
+  const bytes = new Uint8Array(9);
+  crypto.getRandomValues(bytes);
+  let id = '';
+  for (let i = 0; i < bytes.length; i++) id += String.fromCharCode(bytes[i]);
+  id = btoa(id).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  ROOM_ID = id;
+  const u = new URL(location.href);
+  u.searchParams.set('room', ROOM_ID);
+  history.replaceState(null, '', u);
+}
+
+function loadLocal() {
   try {
-    const s = localStorage.getItem('fifa2026_scores');
-    const c = localStorage.getItem('fifa2026_comments');
+    let s = localStorage.getItem(lsKeyScores());
+    let c = localStorage.getItem(lsKeyComments());
+    if (!s && ROOM_ID) {
+      const legacyS = localStorage.getItem('fifa2026_scores');
+      const legacyC = localStorage.getItem('fifa2026_comments');
+      if (legacyS) { s = legacyS; c = legacyC || '{}'; }
+    }
     if (s) SCORES = JSON.parse(s);
     if (c) COMMENTS = JSON.parse(c);
-  } catch(e) {}
+  } catch (e) {}
 }
-function saveState() {
+
+function persistLocal() {
   try {
-    localStorage.setItem('fifa2026_scores', JSON.stringify(SCORES));
-    localStorage.setItem('fifa2026_comments', JSON.stringify(COMMENTS));
-  } catch(e) {}
+    localStorage.setItem(lsKeyScores(), JSON.stringify(SCORES));
+    localStorage.setItem(lsKeyComments(), JSON.stringify(COMMENTS));
+  } catch (e) {}
 }
+
+function sbHeaders(extra) {
+  const k = String(SB_CFG.anonKey || '').trim();
+  return Object.assign({
+    apikey: k,
+    Authorization: 'Bearer ' + k,
+    'Content-Type': 'application/json',
+  }, extra || {});
+}
+
+async function fetchRoomRow() {
+  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const url = base + '/rest/v1/fifa_rooms?id=eq.' + encodeURIComponent(ROOM_ID) + '&select=id,scores,comments,updated_at';
+  const r = await fetch(url, { headers: sbHeaders() });
+  if (!r.ok) throw new Error(await r.text());
+  const arr = await r.json();
+  return arr[0] || null;
+}
+
+async function pushCloudSilent() {
+  if (!cloudEnabled() || applyingRemote || !ROOM_ID) return;
+  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const url = base + '/rest/v1/fifa_rooms';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: sbHeaders({ Prefer: 'resolution=merge-duplicates,return=representation' }),
+    body: JSON.stringify([{
+      id: ROOM_ID,
+      scores: SCORES,
+      comments: COMMENTS,
+      updated_at: new Date().toISOString(),
+    }]),
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const rows = await r.json();
+  if (rows && rows[0] && rows[0].updated_at) lastRemoteUpdated = rows[0].updated_at;
+}
+
+function scheduleCloudPush() {
+  if (!cloudEnabled() || applyingRemote) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(function () {
+    pushTimer = null;
+    pushCloudSilent().then(function () { cloudUiState = 'ok'; updateSyncBanner(); }).catch(function () {
+      cloudUiState = 'error';
+      updateSyncBanner();
+    });
+  }, 450);
+}
+
+function applyRemotePayload(row) {
+  if (!row) return;
+  if (row.updated_at && lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
+  applyingRemote = true;
+  lastRemoteUpdated = row.updated_at || null;
+  SCORES = row.scores && typeof row.scores === 'object' ? row.scores : {};
+  COMMENTS = row.comments && typeof row.comments === 'object' ? row.comments : {};
+  persistLocal();
+  renderSchedule();
+  updateStatsBar();
+  refreshGroupsTab();
+  refreshBracket();
+  applyingRemote = false;
+  cloudUiState = 'ok';
+  updateSyncBanner();
+}
+
+function updateSyncBanner() {
+  const el = document.getElementById('syncBanner');
+  if (!el) return;
+  if (!cloudEnabled()) {
+    el.style.display = 'flex';
+    el.innerHTML = '<span>Scores and notes stay in this browser. For shared cloud sync, follow <code>SETUP.md</code> (Supabase + GitHub secrets).</span>';
+    return;
+  }
+  el.style.display = 'flex';
+  const roomShort = ROOM_ID.length > 16 ? ROOM_ID.slice(0, 14) + '…' : ROOM_ID;
+  const status = cloudUiState === 'error'
+    ? '<span style="color:#ff9090">Cloud error — check Supabase URL/key and <code>database/supabase.sql</code>.</span>'
+    : cloudUiState === 'syncing'
+    ? '<span>Syncing…</span>'
+    : '<span style="color:#6ed49a">Cloud on</span>';
+  el.innerHTML =
+    '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;width:100%;justify-content:space-between">' +
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">' + status +
+      '<span>· Room <code>' + roomShort + '</code></span>' +
+      '<span>· Same URL = same pool — share it with your group</span></div>' +
+    '<div style="display:flex;gap:8px;flex-shrink:0">' +
+      '<button type="button" class="btn btn-reset" style="padding:5px 12px;font-size:11px" onclick="copyRoomLink()">Copy link</button>' +
+      '<button type="button" class="btn btn-reset" style="padding:5px 12px;font-size:11px" onclick="newCloudRoom()">New room</button>' +
+    '</div></div>';
+}
+
+function copyRoomLink() {
+  const t = location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(function () { alert('Link copied.'); }).catch(function () { window.prompt('Copy this link:', t); });
+  } else {
+    window.prompt('Copy this link:', t);
+  }
+}
+
+function newCloudRoom() {
+  try {
+    localStorage.removeItem(lsKeyScores());
+    localStorage.removeItem(lsKeyComments());
+  } catch (e) {}
+  const bytes = new Uint8Array(9);
+  crypto.getRandomValues(bytes);
+  let raw = '';
+  for (let i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
+  const id = btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const u = new URL(location.href);
+  u.searchParams.set('room', id);
+  location.href = u.toString();
+}
+
+async function initCloudSync() {
+  if (!cloudEnabled()) {
+    cloudUiState = 'local';
+    updateSyncBanner();
+    return;
+  }
+  cloudUiState = 'syncing';
+  updateSyncBanner();
+  try {
+    const row = await fetchRoomRow();
+    const remoteHas = row && (
+      (row.scores && Object.keys(row.scores).length) ||
+      (row.comments && Object.keys(row.comments).some(function (k) { return row.comments[k]; }))
+    );
+    const localHas = Object.keys(SCORES).length > 0 || Object.keys(COMMENTS).some(function (k) { return COMMENTS[k]; });
+    if (remoteHas) {
+      applyRemotePayload(row);
+    } else if (localHas) {
+      await pushCloudSilent();
+      cloudUiState = 'ok';
+      updateSyncBanner();
+    } else {
+      lastRemoteUpdated = row && row.updated_at;
+      cloudUiState = 'ok';
+      updateSyncBanner();
+    }
+  } catch (e) {
+    console.warn(e);
+    cloudUiState = 'error';
+    updateSyncBanner();
+  }
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(function () {
+    if (!cloudEnabled() || applyingRemote) return;
+    fetchRoomRow().then(function (row) {
+      if (!row || !row.updated_at) return;
+      if (lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
+      applyRemotePayload(row);
+    }).catch(function () {});
+  }, 7000);
+}
+
+function saveState() {
+  persistLocal();
+  scheduleCloudPush();
+}
+
 function setScore(id, side, val) {
   if (!SCORES[id]) SCORES[id] = {t1:null, t2:null};
-  SCORES[id][side] = val === '' ? null : parseInt(val);
+  SCORES[id][side] = val === '' ? null : parseInt(val, 10);
   saveState();
   refreshGroupsTab();
   refreshBracket();
@@ -493,11 +704,11 @@ function setComment(id, val) {
 // ============================================================
 //  TAB SWITCHING
 // ============================================================
-function switchTab(name) {
+function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (name === 'groups') refreshGroupsTab();
   if (name === 'bracket') refreshBracket();
 }
@@ -592,9 +803,11 @@ function renderSchedule() {
       <td>
         <div class="score-wrap">
           <input class="score-inp" type="number" min="0" max="99" value="${s.t1??''}" placeholder="—"
+            data-mid="${m.id}" data-side="t1"
             onchange="setScore(${m.id},'t1',this.value)" oninput="setScore(${m.id},'t1',this.value)">
           <span class="score-dash">:</span>
           <input class="score-inp" type="number" min="0" max="99" value="${s.t2??''}" placeholder="—"
+            data-mid="${m.id}" data-side="t2"
             onchange="setScore(${m.id},'t2',this.value)" oninput="setScore(${m.id},'t2',this.value)">
         </div>
       </td>
@@ -979,19 +1192,24 @@ function buildFinalTeams(mid) {
 // ============================================================
 //  INIT
 // ============================================================
-loadState();
-populateScheduleFilters();
-filtered=[...ALL_MATCHES];
-renderSchedule();
-updateStatsBar();
-buildGroupSelector();
+(function () {
+  ensureRoomId();
+  loadLocal();
+  populateScheduleFilters();
+  filtered = [...ALL_MATCHES];
+  renderSchedule();
+  updateStatsBar();
+  buildGroupSelector();
+  updateSyncBanner();
 
-// Event listeners for schedule filters
-['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter']
-  .forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener(el.tagName==='SELECT'?'change':'input', applyFilters);
-  });
+  ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter']
+    .forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
+    });
+
+  initCloudSync();
+})();
 </script>
 </body>
 </html>
