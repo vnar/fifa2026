@@ -948,7 +948,52 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 </div>
 
 <script>window.__FIFA_SUPABASE__ = window.__FIFA_SUPABASE__ || {};</script>
-<script src="config.js"></script>
+<script>
+(function loadFifaSupabaseConfigSync() {
+  function pathPrefix() {
+    var p = location.pathname || '/';
+    if (p.endsWith('/')) return p;
+    var last = p.slice(p.lastIndexOf('/') + 1);
+    if (last && last.indexOf('.') > 0) return p.slice(0, p.lastIndexOf('/') + 1);
+    return p + '/';
+  }
+  function mergeCfg(before, after) {
+    function u(s) {
+      return String(s || '').trim();
+    }
+    var ua = u(before.url),
+      ub = u(after.url);
+    var ka = u(before.anonKey),
+      kb = u(after.anonKey);
+    var pa = u(before.publicBoardUrl),
+      pb = u(after.publicBoardUrl);
+    return {
+      url: ua.length > 12 ? String(before.url).trim() : ub.length > 12 ? String(after.url).trim() : '',
+      anonKey:
+        ka.length > 32 ? String(before.anonKey).trim() : kb.length > 32 ? String(after.anonKey).trim() : '',
+      publicBoardUrl:
+        pa.length > 4 ? String(before.publicBoardUrl).trim() : pb.length > 4 ? String(after.publicBoardUrl).trim() : '',
+    };
+  }
+  var before = Object.assign({}, window.__FIFA_SUPABASE__ || {});
+  var abs = location.origin + pathPrefix() + 'config.js';
+  var after = before;
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', abs, false);
+    xhr.send(null);
+    if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
+      try {
+        (0, eval)(xhr.responseText);
+      } catch (e2) {
+        window.__FIFA_SUPABASE__ = before;
+      }
+      after = Object.assign({}, window.__FIFA_SUPABASE__ || {});
+    }
+  } catch (e) {}
+  window.__FIFA_SUPABASE__ = mergeCfg(before, after);
+})();
+</script>
 <script>
 (function () {
   /**
@@ -1193,7 +1238,9 @@ const GROUP_TEAMS = {
 // ============================================================
 //  STATE — one shared board (localStorage + optional Supabase row id "global")
 // ============================================================
-const SB_CFG = window.__FIFA_SUPABASE__ || {};
+function getSbCfg() {
+  return window.__FIFA_SUPABASE__ || {};
+}
 const CLOUD_ROW_ID = 'global';
 let SCORES = {};   // { matchId: { t1: number|null, t2: number|null } }
 let COMMENTS = {}; // { matchId: string }
@@ -1206,8 +1253,8 @@ let pollTimer = null;
 let cloudUiState = 'local';
 
 function cloudEnabled() {
-  const u = String(SB_CFG.url || '').trim();
-  const k = String(SB_CFG.anonKey || '').trim();
+  const u = String(getSbCfg().url || '').trim();
+  const k = String(getSbCfg().anonKey || '').trim();
   return u.length > 12 && k.length > 32;
 }
 
@@ -1339,7 +1386,7 @@ function stripLegacyFifaKeys() {
 }
 
 function sbHeaders(extra) {
-  const k = String(SB_CFG.anonKey || '').trim();
+  const k = String(getSbCfg().anonKey || '').trim();
   return Object.assign({
     apikey: k,
     Authorization: 'Bearer ' + k,
@@ -1348,7 +1395,7 @@ function sbHeaders(extra) {
 }
 
 async function fetchRoomRow() {
-  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const base = String(getSbCfg().url || '').replace(/\/$/, '');
   const url = base + '/rest/v1/fifa_rooms?id=eq.' + encodeURIComponent(CLOUD_ROW_ID) + '&select=id,scores,comments,bought,ticket_counts,updated_at';
   const r = await fetch(url, { headers: sbHeaders() });
   if (!r.ok) throw new Error(await r.text());
@@ -1361,7 +1408,7 @@ async function ensureGlobalRoomExists() {
   if (!cloudEnabled() || applyingRemote) return;
   var existing = await fetchRoomRow();
   if (existing) return;
-  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const base = String(getSbCfg().url || '').replace(/\/$/, '');
   const url = base + '/rest/v1/fifa_rooms';
   const r = await fetch(url, {
     method: 'POST',
@@ -1380,7 +1427,7 @@ async function ensureGlobalRoomExists() {
 
 async function pushCloudSilent() {
   if (!cloudEnabled() || applyingRemote) return;
-  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const base = String(getSbCfg().url || '').replace(/\/$/, '');
   const url = base + '/rest/v1/fifa_rooms';
   const r = await fetch(url, {
     method: 'POST',
@@ -1441,14 +1488,29 @@ function normalizeBought(obj) {
   return out;
 }
 
+/** Same directory as index.html (fixes GitHub Pages /repo vs /repo/ and /repo/index.html). */
+function fifaSameOriginDirBase() {
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
+  var p = location.pathname || '/';
+  var dir;
+  if (p.endsWith('/')) dir = p;
+  else {
+    var last = p.slice(p.lastIndexOf('/') + 1);
+    if (last && last.indexOf('.') > 0) dir = p.slice(0, p.lastIndexOf('/') + 1);
+    else dir = p + '/';
+  }
+  return location.origin + dir;
+}
+
 /** Optional URL for JSON snapshot (see public-board.json). Same-origin default on http(s). */
 function inferPublicBoardJsonUrl() {
   try {
     var cfg = window.__FIFA_SUPABASE__ || {};
     var o = String(cfg.publicBoardUrl || '').trim();
     if (o.length > 4) return o;
-    if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
-    return new URL('public-board.json', location.href).href;
+    var base = fifaSameOriginDirBase();
+    if (!base) return null;
+    return new URL('public-board.json', base).href;
   } catch (e) {
     return null;
   }

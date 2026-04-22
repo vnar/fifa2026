@@ -34,6 +34,9 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           PUBLIC_BOARD_URL: ${{ secrets.PUBLIC_BOARD_URL }}
         run: |
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::warning::SUPABASE_URL or SUPABASE_ANON_KEY is empty — the live site will stay local-only until both repository secrets are set."
+          fi
           mkdir -p site
           cp index.html site/
           if [ -f public-board.json ]; then cp public-board.json site/; else printf '%s\n' '{"scores":{},"comments":{},"bought":{},"ticket_counts":{}}' > site/public-board.json; fi

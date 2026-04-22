@@ -18,6 +18,8 @@ The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The
 
 Anyone who loads the deployed site with cloud configured shares the **same** `global` row (updates within a few seconds via polling). Without cloud, each browser keeps its own copy in `localStorage`; two tabs on the same device still sync via the `storage` event.
 
+**GitHub Pages project URL:** The app loads `config.js` from the **same folder as the page** (including when the address bar shows `…/your-repo` **without** a trailing slash). If you still see “browser profile only”, open **Actions → Deploy GitHub Pages** and confirm the run is green and that **both** secrets are set; an empty secret produces an empty board and the workflow prints a warning in the log.
+
 ### Optional: keys only in the HTML repo (no Actions secrets)
 
 In `index.html`, find **`BUILTIN_SUPABASE`** (right after `config.js`) and paste **Project URL** and **anon key** into `url` / `anonKey`. They are public to anyone who views source—same as shipping `config.js`. Use a throwaway Supabase project for a casual pool.
