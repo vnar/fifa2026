@@ -1,5 +1,5 @@
 /**
- * Local persistence smoke test (localStorage + room URL).
+ * Local persistence smoke test (localStorage, single global keys).
  * Requires: python3 -m http.server 8765 (from repo root) running first.
  * Run: node scripts/test-persistence.mjs
  */
@@ -50,8 +50,8 @@ if (val !== '3') {
   console.error('FAIL: expected first schedule score input to remain "3" after reload');
   process.exit(1);
 }
-if (!keysAfter.some((k) => k.includes('scores_'))) {
-  console.error('FAIL: expected room-scored localStorage keys');
+if (!keysAfter.includes('fifa2026_scores')) {
+  console.error('FAIL: expected fifa2026_scores localStorage key');
   process.exit(1);
 }
 

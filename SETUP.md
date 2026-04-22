@@ -1,54 +1,50 @@
 # FIFA 2026 dashboard — cloud sync and deploy
 
-The **database** is a table on **[Supabase](https://supabase.com/)** (hosted Postgres in the cloud). It is **not** stored in this git repo.
+The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The app uses **one row** with `id = 'global'` for scores, notes, and ticket highlights — no rooms, no `?room=` parameter.
 
 ## One-time: create the database
 
 1. Create a free Supabase project.
-2. Open **SQL Editor**, paste the contents of `database/supabase.sql`, and run it.
-3. In **Project Settings → API**, copy the **Project URL** and the **anon public** key.
+2. **SQL Editor** → paste `database/supabase.sql` → Run.
+3. If you created the table **before** the `bought` column existed, also run `database/migration_add_bought.sql` once.
+4. **Project Settings → API** → copy **Project URL** and **anon public** key.
 
-## GitHub Pages (recommended)
+## GitHub Pages
 
-1. Push this repo to GitHub.
-2. In the repo, go to **Settings → Secrets and variables → Actions** and add:
-   - `SUPABASE_URL` — your Project URL  
-   - `SUPABASE_ANON_KEY` — your anon public key  
-3. Enable Pages: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-4. Push to `main` (or run the **Deploy GitHub Pages** workflow manually). The workflow writes `site/config.js` from secrets and publishes `index.html` + `config.js`.
+1. Add Actions secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+2. **Settings → Pages** → Source: **GitHub Actions**.
+3. Push `main` (or run **Deploy GitHub Pages**). The workflow publishes `index.html` + generated `config.js`.
 
-After deploy, open the Pages URL. Each visit gets a **`?room=`** id in the address bar; share that URL so everyone edits the same scores and notes.
+Anyone who loads the deployed site with cloud configured shares the **same** `global` row (updates within a few seconds via polling). Without cloud, each browser keeps its own copy in `localStorage`; two tabs on the same device still sync via the `storage` event.
 
 ## Local testing
 
-Copy `config.example.js` to `config.js`, fill in `url` and `anonKey`, and serve the folder over HTTP (not `file://` if the browser blocks `fetch`):
+Copy `config.example.js` → `config.js`, fill keys, then:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080`.
+Open `http://localhost:8080`.
 
 ## Security note
 
-Row policies allow anonymous read/write on `fifa_rooms`. Access control is the **secret room id** in the URL (same idea as an unlisted Google Doc). Do not use this for sensitive data.
+Anonymous policies on `fifa_rooms` mean anyone with your anon key (visible in the static bundle) can read/write. Use only for casual pools; do not store sensitive data.
 
-## Why two browsers do not show the same scores
+## Match schedule source
 
-Without Supabase, data lives in **each browser’s own storage**. Two different browsers (or a phone and a laptop) **cannot** see each other’s updates.
+Group-stage and knockout pairings are rebuilt from the post–draw schedule (see `scripts/schedule-source.txt` and `scripts/build-schedule.mjs`). Kickoffs are **U.S. Eastern** style labels for display. Always confirm tickets and times on [fifa.com](https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/matches) before travel.
 
-With **cloud** enabled, everyone must use the **exact same URL**, including the same `?room=…` value. After a change, the other person’s screen updates within a few seconds (polling).
-
-In **one browser**, two tabs now share the same default room when you open the site without `?room=` (this browser remembers the last room), and tabs **sync live** via the `storage` event.
+```bash
+npm run build:schedule   # writes scripts/all_matches_generated.js — then merge into index.html ALL_MATCHES if you update the source table
+```
 
 ## Automated check (local persistence)
 
-From the repo root, with `python3 -m http.server 8765` running in another terminal:
+With `python3 -m http.server 8765` running:
 
 ```bash
-npm install
-npx playwright install chromium
-npm run test:persist
+npm install && npx playwright install chromium && npm run test:persist
 ```
 
-This asserts that a score survives a full page reload (localStorage + `?room=`). It does not validate Supabase unless you set `TEST_BASE` to your deployed URL and add a `config.js` next to the served `index.html` with valid keys.
+Checks that a score survives reload using keys `fifa2026_scores` / `fifa2026_comments`.
