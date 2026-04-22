@@ -44,7 +44,7 @@ npm run build:schedule   # writes scripts/all_matches_generated.js — then merg
 With `python3 -m http.server 8765` running:
 
 ```bash
-npm install && npx playwright install chromium && npm run test:persist
+npm install && npx playwright install chromium && npm run test:persist && npm run test:ui
 ```
 
-Checks that a score survives reload using keys `fifa2026_scores` / `fifa2026_comments`.
+`test:persist` checks that a score survives reload. `test:ui` checks filter reset and ticket row highlighting.

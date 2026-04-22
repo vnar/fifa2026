@@ -54,8 +54,9 @@ thead th { background: #122040; color: #c9a84c; padding: 11px 12px; text-align: 
 thead th:hover { color: #f0d070; }
 tbody tr { border-bottom: 1px solid #1a2e50; transition: background 0.15s; }
 tbody tr:hover { background: #122040; }
-tbody tr.row-ticket { background: rgba(201, 168, 76, 0.11); box-shadow: inset 4px 0 0 #c9a84c; }
-tbody tr.row-ticket:hover { background: rgba(201, 168, 76, 0.17); }
+/* Strong highlight so ticket rows read clearly over the dark theme */
+#matchTable tbody tr.row-ticket { background: rgba(201, 168, 76, 0.22) !important; box-shadow: inset 5px 0 0 #c9a84c; }
+#matchTable tbody tr.row-ticket:hover { background: rgba(201, 168, 76, 0.3) !important; }
 tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-align: middle; }
 .td-ticket { text-align: center; }
 .td-ticket input { width: 18px; height: 18px; cursor: pointer; accent-color: #c9a84c; vertical-align: middle; }
@@ -284,7 +285,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
           <option value="07">July 2026</option>
         </select>
       </div>
-      <button class="btn btn-reset" onclick="resetFilters()">↺ Reset</button>
+      <button type="button" class="btn btn-reset" id="btnResetFilters">↺ Reset</button>
     </div>
   </div>
   <div class="results-info" id="resultsInfo"></div>
@@ -780,13 +781,17 @@ function sortTable(key) {
   renderSchedule();
 }
 
-function resetFilters() {
+function resetFilters(ev) {
+  if (ev && ev.preventDefault) ev.preventDefault();
+  if (ev && ev.stopPropagation) ev.stopPropagation();
   sortKey = 'id';
   sortAsc = true;
-  ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.tagName==='SELECT'?el.selectedIndex=0:el.value='';
+  ['searchInput', 'stageFilter', 'groupFilter', 'countryFilter', 'cityFilter', 'monthFilter'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'SELECT' || el.tagName === 'INPUT') el.value = '';
   });
-  filtered=[...ALL_MATCHES]; renderSchedule(); updateStatsBar();
+  applyFilters();
 }
 
 function sortColumnValue(m) {
@@ -820,7 +825,7 @@ function renderSchedule() {
     const rowClass = bt[m.id] ? ' class="row-ticket"' : '';
     return `<tr${rowClass}>
       <td class="match-num">${m.id}</td>
-      <td class="td-ticket"><input type="checkbox" aria-label="I have a ticket for this match"${tick} onchange="setBought(${m.id},this.checked)"></td>
+      <td class="td-ticket"><input type="checkbox" class="ticket-cb" id="ticket-${m.id}" name="ticket_${m.id}" aria-label="I have a ticket for this match"${tick} onchange="setBought(${m.id},this.checked)"></td>
       <td>${m.date}</td>
       <td class="hide-sm">${m.day}</td>
       <td class="hide-sm">${m.time}</td>
@@ -1234,6 +1239,8 @@ function buildFinalTeams(mid) {
       const el = document.getElementById(id);
       if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
     });
+  var btnReset = document.getElementById('btnResetFilters');
+  if (btnReset) btnReset.addEventListener('click', resetFilters);
 
   // Same browser, other tab/window changed localStorage → refresh this tab
   window.addEventListener('storage', function (e) {
