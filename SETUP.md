@@ -32,3 +32,15 @@ Then open `http://localhost:8080`.
 ## Security note
 
 Row policies allow anonymous read/write on `fifa_rooms`. Access control is the **secret room id** in the URL (same idea as an unlisted Google Doc). Do not use this for sensitive data.
+
+## Automated check (local persistence)
+
+From the repo root, with `python3 -m http.server 8765` running in another terminal:
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:persist
+```
+
+This asserts that a score survives a full page reload (localStorage + `?room=`). It does not validate Supabase unless you set `TEST_BASE` to your deployed URL and add a `config.js` next to the served `index.html` with valid keys.
