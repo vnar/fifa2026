@@ -18,6 +18,10 @@ The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The
 
 Anyone who loads the deployed site with cloud configured shares the **same** `global` row (updates within a few seconds via polling). Without cloud, each browser keeps its own copy in `localStorage`; two tabs on the same device still sync via the `storage` event.
 
+### Private / incognito windows
+
+Browsers **isolate** storage for private or incognito mode from your normal windows. Opening the dashboard in incognito will **not** show scores or tickets you saved in a regular window—that is expected browser behavior, not a bug. **Cloud sync** (above) is how you get the same board in private windows and on other devices: the app loads from Supabase after the first fetch.
+
 ## Local testing
 
 Copy `config.example.js` → `config.js`, fill keys, then:
