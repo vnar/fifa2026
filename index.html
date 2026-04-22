@@ -1165,15 +1165,61 @@ function scheduleCloudPush() {
   }, 450);
 }
 
+function remoteHasTicketMarks(bought, ticketCounts) {
+  var b = bought && typeof bought === 'object' ? bought : {};
+  if (Object.keys(b).some(function (k) { return b[k]; })) return true;
+  var tc = ticketCounts && typeof ticketCounts === 'object' ? ticketCounts : {};
+  return Object.keys(tc).some(function (k) {
+    var n = parseInt(tc[k], 10);
+    return Number.isFinite(n) && n > 0;
+  });
+}
+
+function normalizeTicketCounts(obj) {
+  var out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  Object.keys(obj).forEach(function (k) {
+    var n = parseInt(obj[k], 10);
+    if (!Number.isFinite(n) || n < 1) return;
+    out[k] = n > 99 ? 99 : n;
+  });
+  return out;
+}
+
+function normalizeBought(obj) {
+  var out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  Object.keys(obj).forEach(function (k) {
+    if (obj[k]) out[k] = true;
+  });
+  return out;
+}
+
 function applyRemotePayload(row) {
   if (!row) return;
   if (row.updated_at && lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
   applyingRemote = true;
   lastRemoteUpdated = row.updated_at || null;
+  var prevBought = Object.assign({}, BOUGHT);
+  var prevTicketCounts = Object.assign({}, TICKET_COUNTS);
   SCORES = row.scores && typeof row.scores === 'object' ? row.scores : {};
   COMMENTS = row.comments && typeof row.comments === 'object' ? row.comments : {};
-  BOUGHT = row.bought && typeof row.bought === 'object' ? row.bought : {};
-  TICKET_COUNTS = row.ticket_counts && typeof row.ticket_counts === 'object' ? row.ticket_counts : {};
+  var remoteBought = normalizeBought(row.bought);
+  var remoteTc = normalizeTicketCounts(row.ticket_counts);
+  if (remoteHasTicketMarks(row.bought, row.ticket_counts)) {
+    BOUGHT = remoteBought;
+    TICKET_COUNTS = remoteTc;
+    Object.keys(TICKET_COUNTS).forEach(function (k) {
+      if (parseInt(TICKET_COUNTS[k], 10) > 0) BOUGHT[k] = true;
+    });
+    Object.keys(BOUGHT).forEach(function (k) {
+      if (!TICKET_COUNTS[k] || parseInt(TICKET_COUNTS[k], 10) < 1) TICKET_COUNTS[k] = 1;
+    });
+  } else {
+    // Remote row has scores/comments but no ticket data yet (or legacy row) — do not wipe local 🎫 marks.
+    BOUGHT = Object.assign({}, prevBought);
+    TICKET_COUNTS = Object.assign({}, prevTicketCounts);
+  }
   persistLocal();
   renderSchedule();
   refreshGroupsTab();
