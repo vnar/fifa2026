@@ -262,9 +262,9 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 <div id="syncBanner" class="sync-banner" aria-live="polite"></div>
 
 <nav class="tab-nav">
-  <button class="tab-btn active" onclick="switchTab('schedule', this)">📅 Schedule</button>
-  <button class="tab-btn" onclick="switchTab('groups', this)">📊 Group Tables</button>
-  <button class="tab-btn" onclick="switchTab('bracket', this)">🏆 Bracket</button>
+  <button type="button" class="tab-btn active" id="tabBtnSchedule" onclick="switchTab('schedule', this)">📅 Schedule</button>
+  <button type="button" class="tab-btn" onclick="switchTab('groups', this)">📊 Group Tables</button>
+  <button type="button" class="tab-btn" onclick="switchTab('bracket', this)">🏆 Bracket</button>
 </nav>
 
 <!-- ============ SCHEDULE TAB ============ -->
@@ -285,7 +285,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
           <option value="07">July 2026</option>
         </select>
       </div>
-      <button type="button" class="btn btn-reset" id="btnResetFilters">↺ Reset</button>
+      <button type="button" class="btn btn-reset" id="btnResetFilters" title="Clears filters and home view. You must confirm to permanently erase scores, notes, and ticket marks.">↺ Reset</button>
     </div>
   </div>
   <div class="results-info" id="resultsInfo"></div>
@@ -552,6 +552,16 @@ function persistLocal() {
   } catch (e) {}
 }
 
+/** Remove older per-room localStorage keys so a wipe cannot resurrect data on next load. */
+function stripLegacyFifaKeys() {
+  try {
+    for (var i = localStorage.length - 1; i >= 0; i--) {
+      var k = localStorage.key(i);
+      if (k && /^fifa2026_(scores|comments|bought)_/.test(k)) localStorage.removeItem(k);
+    }
+  } catch (e) {}
+}
+
 function sbHeaders(extra) {
   const k = String(SB_CFG.anonKey || '').trim();
   return Object.assign({
@@ -784,6 +794,15 @@ function sortTable(key) {
 function resetFilters(ev) {
   if (ev && ev.preventDefault) ev.preventDefault();
   if (ev && ev.stopPropagation) ev.stopPropagation();
+  var msg = 'Delete ALL scores, match notes, and ticket selections from this board (this device and cloud sync, if enabled)? This cannot be undone.';
+  if (!window.confirm(msg)) return;
+
+  SCORES = {};
+  COMMENTS = {};
+  BOUGHT = {};
+  stripLegacyFifaKeys();
+  persistLocal();
+
   sortKey = 'id';
   sortAsc = true;
   ['searchInput', 'stageFilter', 'groupFilter', 'countryFilter', 'cityFilter', 'monthFilter'].forEach(function (id) {
@@ -792,6 +811,28 @@ function resetFilters(ev) {
     if (el.tagName === 'SELECT' || el.tagName === 'INPUT') el.value = '';
   });
   applyFilters();
+  // Same “home” layout as a fresh load: Schedule tab, all groups, top of page.
+  var schedBtn = document.getElementById('tabBtnSchedule');
+  switchTab('schedule', schedBtn);
+  activeGroupView = 'ALL';
+  document.querySelectorAll('#groupSelector .group-btn').forEach(function (b) { b.classList.remove('active'); });
+  var allGrpBtn = document.querySelector('#groupSelector .group-btn');
+  if (allGrpBtn) allGrpBtn.classList.add('active');
+  refreshGroupsTab();
+  refreshBracket();
+  window.scrollTo(0, 0);
+
+  if (cloudEnabled() && !applyingRemote) {
+    cloudUiState = 'syncing';
+    updateSyncBanner();
+    pushCloudSilent().then(function () {
+      cloudUiState = 'ok';
+      updateSyncBanner();
+    }).catch(function () {
+      cloudUiState = 'error';
+      updateSyncBanner();
+    });
+  }
 }
 
 function sortColumnValue(m) {
