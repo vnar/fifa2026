@@ -488,12 +488,32 @@ function cloudEnabled() {
 function lsKeyScores() { return 'fifa2026_scores_' + ROOM_ID; }
 function lsKeyComments() { return 'fifa2026_comments_' + ROOM_ID; }
 
+const ACTIVE_ROOM_KEY = 'fifa2026_active_room';
+
+function rememberActiveRoom() {
+  try {
+    localStorage.setItem(ACTIVE_ROOM_KEY, ROOM_ID);
+  } catch (e) {}
+}
+
 function ensureRoomId() {
   const p = new URLSearchParams(location.search).get('room');
   if (p && /^[A-Za-z0-9_-]{6,80}$/.test(p)) {
     ROOM_ID = p;
+    rememberActiveRoom();
     return;
   }
+  try {
+    const prev = localStorage.getItem(ACTIVE_ROOM_KEY);
+    if (prev && /^[A-Za-z0-9_-]{6,80}$/.test(prev)) {
+      ROOM_ID = prev;
+      const u = new URL(location.href);
+      u.searchParams.set('room', ROOM_ID);
+      history.replaceState(null, '', u);
+      rememberActiveRoom();
+      return;
+    }
+  } catch (e) {}
   const bytes = new Uint8Array(9);
   crypto.getRandomValues(bytes);
   let id = '';
@@ -503,6 +523,7 @@ function ensureRoomId() {
   const u = new URL(location.href);
   u.searchParams.set('room', ROOM_ID);
   history.replaceState(null, '', u);
+  rememberActiveRoom();
 }
 
 function loadLocal() {
@@ -597,7 +618,10 @@ function updateSyncBanner() {
   if (!el) return;
   if (!cloudEnabled()) {
     el.style.display = 'flex';
-    el.innerHTML = '<span>Scores and notes stay in this browser. For shared cloud sync, follow <code>SETUP.md</code> (Supabase + GitHub secrets).</span>';
+    el.innerHTML =
+      '<span><strong>This browser only</strong> — Chrome and Safari (or another computer) each keep separate data. ' +
+      'To sync across people or devices, set up cloud in <code>SETUP.md</code>. ' +
+      'Here, two tabs in <em>this</em> browser update live; the address must show the same <code>?room=</code> (copy the full link).</span>';
     return;
   }
   el.style.display = 'flex';
@@ -631,6 +655,7 @@ function newCloudRoom() {
   try {
     localStorage.removeItem(lsKeyScores());
     localStorage.removeItem(lsKeyComments());
+    localStorage.removeItem(ACTIVE_ROOM_KEY);
   } catch (e) {}
   const bytes = new Uint8Array(9);
   crypto.getRandomValues(bytes);
@@ -681,7 +706,7 @@ async function initCloudSync() {
       if (lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
       applyRemotePayload(row);
     }).catch(function () {});
-  }, 7000);
+  }, 4000);
 }
 
 function saveState() {
@@ -1207,6 +1232,24 @@ function buildFinalTeams(mid) {
       const el = document.getElementById(id);
       if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
     });
+
+  // Same browser, other tab/window changed localStorage → refresh this tab
+  window.addEventListener('storage', function (e) {
+    if (!ROOM_ID) return;
+    if (e.key !== lsKeyScores() && e.key !== lsKeyComments()) return;
+    try {
+      applyingRemote = true;
+      var s = localStorage.getItem(lsKeyScores());
+      var c = localStorage.getItem(lsKeyComments());
+      SCORES = s ? JSON.parse(s) : {};
+      COMMENTS = c ? JSON.parse(c) : {};
+      renderSchedule();
+      updateStatsBar();
+      refreshGroupsTab();
+      refreshBracket();
+    } catch (err) {}
+    applyingRemote = false;
+  });
 
   initCloudSync();
 })();

@@ -33,6 +33,14 @@ Then open `http://localhost:8080`.
 
 Row policies allow anonymous read/write on `fifa_rooms`. Access control is the **secret room id** in the URL (same idea as an unlisted Google Doc). Do not use this for sensitive data.
 
+## Why two browsers do not show the same scores
+
+Without Supabase, data lives in **each browser’s own storage**. Two different browsers (or a phone and a laptop) **cannot** see each other’s updates.
+
+With **cloud** enabled, everyone must use the **exact same URL**, including the same `?room=…` value. After a change, the other person’s screen updates within a few seconds (polling).
+
+In **one browser**, two tabs now share the same default room when you open the site without `?room=` (this browser remembers the last room), and tabs **sync live** via the `storage` event.
+
 ## Automated check (local persistence)
 
 From the repo root, with `python3 -m http.server 8765` running in another terminal:
