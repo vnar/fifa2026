@@ -4,23 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIFA 2026 Dashboard</title>
+<meta name="description" content="FIFA World Cup 2026 — schedule (ET), tickets, group tables, and knockout bracket.">
+<meta property="og:title" content="FIFA World Cup 2026 Dashboard">
+<meta property="og:description" content="Match schedule, tickets, group tables, and bracket — Eastern Time (ET).">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og-image.svg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --text-muted: #a8c4e0;
+  --text-muted-dim: #8eb0d4;
+}
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #e0e6f0; min-height: 100vh; }
 
 /* HEADER */
 .header { background: linear-gradient(135deg,#1a3a6e 0%,#0d2347 50%,#1a1a2e 100%); padding: 20px 32px; border-bottom: 2px solid #c9a84c; display: flex; align-items: center; gap: 16px; }
 .header h1 { font-size: 26px; font-weight: 800; color: #c9a84c; letter-spacing: 1px; text-transform: uppercase; }
 .header p { color: #8fa3c4; font-size: 12px; margin-top: 3px; }
-.header-et-note { font-size: 11px; color: #6a88b0; margin-top: 8px; max-width: 720px; line-height: 1.45; border-left: 3px solid #c9a84c; padding-left: 10px; }
+.header-et-note { font-size: 11px; color: var(--text-muted); margin-top: 8px; max-width: 720px; line-height: 1.45; border-left: 3px solid #c9a84c; padding-left: 10px; }
 .header-et-note strong { color: #c9a84c; font-weight: 700; }
-
-.sync-banner { display: none; align-items: center; gap: 12px; padding: 10px 32px; background: #0f2244; border-bottom: 1px solid #1e3358; font-size: 12px; color: #8fa3c4; }
-.sync-banner code { font-size: 11px; background: #0a1628; padding: 2px 6px; border-radius: 4px; border: 1px solid #1e3a6e; }
 
 /* TABS */
 .tab-nav { display: flex; background: #0d1f40; border-bottom: 2px solid #1e3358; padding: 0 32px; gap: 4px; }
-.tab-btn { padding: 14px 24px; cursor: pointer; font-size: 13px; font-weight: 600; color: #6a88b0; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.tab-btn { padding: 14px 24px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted); border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
 .tab-btn:hover { color: #e0e6f0; }
 .tab-btn.active { color: #c9a84c; border-bottom-color: #c9a84c; }
 .tab-panel { display: none; }
@@ -37,7 +44,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .stat-card { background: #122040; border: 1px solid #1e3a6e; border-radius: 10px; padding: 7px 10px; text-align: center; min-width: 0; }
 .stat-card .sn { font-size: 22px; font-weight: 800; color: #c9a84c; }
-.stat-card .sl { font-size: 10px; color: #6a88b0; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.stat-card .sl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
 /* MY TICKETS — strip above filters */
 .my-tickets-section {
@@ -47,7 +54,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .my-tickets-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px 14px;
   flex-wrap: wrap;
   margin-bottom: 12px;
@@ -61,17 +68,97 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .my-tickets-sub {
   font-size: 11px;
-  color: #6a88b0;
+  color: var(--text-muted);
+}
+.my-tickets-scroll-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
 }
 .my-tickets-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
-  align-items: start;
+  align-items: stretch;
+  width: max-content;
+  min-width: 100%;
+}
+.my-tickets-strip-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.my-tickets-strip-footer[hidden] { display: none !important; }
+.my-tickets-strip-footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.my-tickets-nav-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #2a5a9e;
+  background: #122040;
+  color: #c9a84c;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.my-tickets-nav-btn:hover { background: #1a3358; border-color: #c9a84c; }
+.my-tickets-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.my-tickets-progress-wrap {
+  flex: 1 1 auto;
+  min-width: 48px;
+  max-width: 360px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+.my-tickets-progress {
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: #0a1628;
+  border: 1px solid #1e3a6e;
+  overflow: hidden;
+}
+.my-tickets-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2a5a9e, #c9a84c);
+  transition: width 0.12s ease-out;
+}
+.my-tickets-badge {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #0a1628;
+  border: 1px solid #2a4a7a;
+  white-space: nowrap;
 }
 .my-tickets-empty {
   font-size: 13px;
-  color: #6a88b0;
+  color: var(--text-muted);
   padding: 14px 18px;
   background: #0a1628;
   border: 1px dashed #2a4a7a;
@@ -79,10 +166,12 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   text-align: center;
   line-height: 1.45;
 }
-/* Ticket “pass” cards — compact, wrap in grid (no horizontal strip scroll) */
+/* Ticket “pass” cards — horizontal strip (scroll with nav below) */
 .ticket-pass {
-  min-width: 0;
-  width: 100%;
+  flex: 0 0 auto;
+  width: clamp(200px, 38vw, 260px);
+  min-width: 200px;
+  max-width: 260px;
   padding: 0;
   border-radius: 10px;
   border: 1px solid rgba(42, 74, 122, 0.95);
@@ -103,7 +192,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   gap: 8px;
   padding: 5px 10px 0;
   font-size: 10px;
-  color: #8fa3c4;
+  color: var(--text-muted);
 }
 .ticket-pass-perf {
   height: 2px;
@@ -144,31 +233,68 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .ticket-mini { font-size: 11px; line-height: 1; opacity: 0.85; }
 .ticket-strip-teams {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 4px 8px;
+  column-gap: 8px;
+  row-gap: 4px;
   font-size: 12px;
   font-weight: 700;
   color: #fafcff;
   line-height: 1.3;
   margin-top: 4px;
 }
-.ticket-strip-teams .vs {
+.ticket-strip-teams > span:first-of-type {
+  justify-self: start;
+  text-align: left;
+  min-width: 0;
+}
+.ticket-strip-teams > .vs {
+  justify-self: center;
   font-size: 9px;
   font-weight: 700;
-  color: #6a88b0;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+.ticket-strip-teams > span:last-of-type {
+  justify-self: end;
+  text-align: right;
+  min-width: 0;
+}
 .ticket-strip-foot {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
   font-size: 9px;
-  color: #7a93b8;
-  margin-top: 5px;
+  color: var(--text-muted);
+}
+.ticket-strip-foot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.ticket-strip-foot-row .badge {
+  flex-shrink: 0;
+}
+.ticket-strip-meta-time {
+  text-align: right;
+  min-width: 0;
+  flex: 1;
+}
+.ticket-strip-host {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+.ticket-strip-matchid {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--text-muted-dim);
+  font-variant-numeric: tabular-nums;
 }
 .ticket-qty-wrap {
   display: flex;
@@ -213,7 +339,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 
 /* FILTERS */
 .filters-section { padding: 16px 32px; background: #0d1f40; border-bottom: 1px solid #1e3358; }
-.filters-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6a88b0; margin-bottom: 10px; }
+.filters-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; }
 .filters-grid { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
 .fg { display: flex; flex-direction: column; gap: 4px; }
 .fg label { font-size: 11px; color: #8fa3c4; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -225,7 +351,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .btn-reset:hover { background: #c9a84c; color: #0a1628; }
 
 /* RESULTS INFO */
-.results-info { padding: 10px 32px; font-size: 13px; color: #6a88b0; background: #0a1628; border-bottom: 1px solid #1a2e50; }
+.results-info { padding: 10px 32px; font-size: 13px; color: var(--text-muted); background: #0a1628; border-bottom: 1px solid #1a2e50; }
 .results-info span { color: #c9a84c; font-weight: 700; }
 
 /* TABLE */
@@ -239,14 +365,69 @@ tbody tr:hover { background: #122040; }
 #matchTable tbody tr.row-ticket { background: rgba(201, 168, 76, 0.22) !important; box-shadow: inset 5px 0 0 #c9a84c; }
 #matchTable tbody tr.row-ticket:hover { background: rgba(201, 168, 76, 0.3) !important; }
 tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-align: middle; }
+/* Pinned first 3 columns (#, ticket, date) while scrolling horizontally */
+#matchTable thead th:nth-child(1),
+#matchTable tbody td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  box-shadow: 6px 0 10px -6px rgba(0, 0, 0, 0.55);
+}
+#matchTable thead th:nth-child(2),
+#matchTable tbody td:nth-child(2) {
+  position: sticky;
+  left: 48px;
+  z-index: 3;
+  width: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  box-shadow: 6px 0 10px -6px rgba(0, 0, 0, 0.55);
+}
+#matchTable thead th:nth-child(3),
+#matchTable tbody td:nth-child(3) {
+  position: sticky;
+  left: 100px;
+  z-index: 2;
+  min-width: 112px;
+  box-shadow: 6px 0 10px -6px rgba(0, 0, 0, 0.55);
+}
+#matchTable thead th:nth-child(1),
+#matchTable thead th:nth-child(2),
+#matchTable thead th:nth-child(3) {
+  z-index: 11;
+  background: #122040;
+}
+#matchTable tbody td:nth-child(1),
+#matchTable tbody td:nth-child(2),
+#matchTable tbody td:nth-child(3) {
+  background: #0a1628;
+}
+#matchTable tbody tr:hover td:nth-child(1),
+#matchTable tbody tr:hover td:nth-child(2),
+#matchTable tbody tr:hover td:nth-child(3) {
+  background: #122040;
+}
+#matchTable tbody tr.row-ticket td:nth-child(1),
+#matchTable tbody tr.row-ticket td:nth-child(2),
+#matchTable tbody tr.row-ticket td:nth-child(3) {
+  background: rgba(44, 40, 30, 0.98);
+}
+#matchTable tbody tr.row-ticket:hover td:nth-child(1),
+#matchTable tbody tr.row-ticket:hover td:nth-child(2),
+#matchTable tbody tr.row-ticket:hover td:nth-child(3) {
+  background: rgba(52, 46, 34, 0.99);
+}
 .td-ticket { text-align: center; }
 .td-ticket input { width: 18px; height: 18px; cursor: pointer; accent-color: #c9a84c; vertical-align: middle; }
-.match-num { color: #6a88b0; font-weight: 600; font-size: 12px; }
+.match-num { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 .team-cell { font-weight: 600; color: #e8f0ff; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 .team-cell .team-flag { font-size: 15px; margin-right: 5px; opacity: 0.92; vertical-align: -2px; line-height: 1; }
 .time-et-cell { white-space: nowrap; }
-.time-et-cell .et-suffix { font-size: 10px; font-weight: 600; color: #6a88b0; margin-left: 3px; letter-spacing: 0.03em; }
-.vs-cell { color: #4a6080; font-size: 11px; text-align: center; }
+.time-et-cell .et-suffix { font-size: 10px; font-weight: 600; color: var(--text-muted); margin-left: 3px; letter-spacing: 0.03em; }
+.vs-cell { color: var(--text-muted-dim); font-size: 11px; text-align: center; }
 
 /* BADGES */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
@@ -262,7 +443,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .score-wrap { display: flex; align-items: center; gap: 4px; }
 .score-inp { width: 38px; background: #0a1628; border: 1px solid #1e3a6e; border-radius: 6px; color: #c9a84c; padding: 4px 6px; font-size: 13px; font-weight: 700; text-align: center; outline: none; }
 .score-inp:focus { border-color: #c9a84c; background: #122040; }
-.score-dash { color: #4a6080; font-weight: 700; }
+.score-dash { color: var(--text-muted-dim); font-weight: 700; }
 
 /* COMMENT INPUT */
 .comment-inp { background: transparent; border: none; border-bottom: 1px solid #1e3a6e; color: #8fa3c4; font-size: 12px; width: 140px; padding: 3px 4px; outline: none; transition: border-color 0.2s; }
@@ -270,14 +451,14 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .comment-inp::placeholder { color: #3a5070; }
 
 /* NO RESULTS */
-.no-results { text-align: center; padding: 60px; color: #4a6080; }
+.no-results { text-align: center; padding: 60px; color: var(--text-muted-dim); }
 
 /* ===== GROUPS TAB ===== */
 .groups-container { padding: 24px 32px; }
 .groups-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
 .groups-header h2 { color: #c9a84c; font-size: 18px; }
 .group-selector { display: flex; flex-wrap: wrap; gap: 6px; }
-.group-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 700; background: #122040; border: 1px solid #1e3a6e; color: #6a88b0; transition: all 0.2s; }
+.group-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 700; background: #122040; border: 1px solid #1e3a6e; color: var(--text-muted); transition: all 0.2s; }
 .group-btn:hover { border-color: #c9a84c; color: #e0e6f0; }
 .group-btn.active { background: #c9a84c; color: #0a1628; border-color: #c9a84c; }
 .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
@@ -286,7 +467,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .group-letter { width: 34px; height: 34px; border-radius: 50%; background: #c9a84c; color: #0a1628; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 .group-card-header span { font-weight: 700; font-size: 14px; color: #e0e6f0; }
 .standings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.standings-table th { padding: 8px 12px; text-align: center; font-size: 10px; text-transform: uppercase; color: #6a88b0; letter-spacing: 0.5px; border-bottom: 1px solid #1e3358; }
+.standings-table th { padding: 8px 12px; text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; border-bottom: 1px solid #1e3358; }
 .standings-table th:first-child { text-align: left; }
 .standings-table td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #0f1e38; }
 .standings-table td:first-child { text-align: left; font-weight: 600; color: #e0e6f0; }
@@ -300,7 +481,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .group-matches { padding: 10px 0; }
 .group-match-row { display: flex; align-items: center; padding: 7px 18px; border-bottom: 1px solid #0f1e38; font-size: 12px; gap: 8px; }
 .group-match-row:last-child { border-bottom: none; }
-.gm-date { color: #6a88b0; min-width: 70px; }
+.gm-date { color: var(--text-muted); min-width: 70px; }
 .gm-team { flex: 1; font-weight: 600; display: flex; align-items: center; gap: 4px; min-width: 0; }
 .gm-team .team-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; }
 .gm-team.right { text-align: right; justify-content: flex-end; }
@@ -309,7 +490,44 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .gm-score-inp:focus { border-color: #c9a84c; }
 
 /* ===== BRACKET TAB ===== */
-.bracket-container { padding: 24px 32px; overflow-x: auto; min-height: 600px; }
+.bracket-container { padding: 24px 32px; }
+.bracket-viewport { position: relative; }
+.bracket-scroll-surface {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 600px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 44px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 44px), transparent 100%);
+}
+.bracket-swipe-hint {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+  z-index: 8;
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8f0ff;
+  background: rgba(10, 22, 40, 0.94);
+  border: 1px solid #c9a84c;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+  max-width: calc(100% - 24px);
+  text-align: center;
+  box-sizing: border-box;
+}
+.bracket-swipe-hint.bracket-swipe-hint--visible { display: block; }
+.bracket-swipe-hint.bracket-swipe-hint--gone {
+  opacity: 0;
+  visibility: hidden;
+}
 .bracket-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
 .bracket-header h2 { color: #c9a84c; font-size: 18px; }
 .bracket-wrap { display: flex; gap: 0; min-width: 1200px; }
@@ -320,17 +538,17 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 
 /* Bracket match card */
 .bmatch { background: #0d1f40; border: 1px solid #1e3358; border-radius: 8px; margin: 4px 6px; position: relative; min-width: 210px; }
-.bmatch-num { font-size: 9px; color: #4a6080; padding: 5px 10px 2px; }
+.bmatch-num { font-size: 9px; color: var(--text-muted-dim); padding: 5px 10px 2px; }
 .bteam { display: flex; align-items: center; padding: 7px 10px; border-bottom: 1px solid #0f1e38; gap: 8px; min-height: 36px; }
 .bteam:last-of-type { border-bottom: none; }
 .bteam-name { flex: 1; font-size: 12px; font-weight: 600; color: #d0dcee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; display: flex; align-items: center; gap: 5px; }
 .bteam-name .bracket-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; line-height: 1; }
 .bteam-name .bteam-name-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.bteam-name.tbd { color: #4a6080; font-style: italic; font-weight: 400; }
+.bteam-name.tbd { color: var(--text-muted-dim); font-style: italic; font-weight: 400; }
 .bteam-name.winner { color: #c9a84c; }
 .bscore { flex-shrink: 0; width: 36px; background: #0a1628; border: 1px solid #2a5a9e; border-radius: 5px; color: #c9a84c; padding: 4px 4px; font-size: 13px; font-weight: 800; text-align: center; outline: none; }
 .bscore:focus { border-color: #c9a84c; background: #122040; }
-.bdate { font-size: 9px; color: #4a6080; padding: 0 10px 4px; }
+.bdate { font-size: 9px; color: var(--text-muted-dim); padding: 0 10px 4px; }
 
 /* Connector lines between rounds */
 .bracket-connector { display: flex; flex-direction: column; justify-content: space-around; width: 24px; }
@@ -351,9 +569,6 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 /* Utility: hidden on small screens */
 .hide-sm { display: table-cell; }
 
-/* Scroll hint for bracket */
-.scroll-hint { display: none; font-size: 11px; color: #6a88b0; padding: 0 0 10px; }
-
 /* ── Tablet (≤1024px) ── */
 @media (max-width: 1024px) {
   .header { padding: 16px 20px; }
@@ -364,6 +579,41 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   .groups-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Narrow / tablets (≤768px): filter grid + stats in ~2 rows ── */
+@media (max-width: 768px) {
+  .filters-section { padding: 14px 18px; }
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: end;
+  }
+  .fg--search {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .fg--search input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+  .filters-grid .fg select,
+  .filters-grid .fg input[type="text"] {
+    min-width: 0;
+    width: 100%;
+  }
+  .filters-grid .btn-reset {
+    grid-column: 1 / -1;
+    width: 100%;
+    text-align: center;
+    padding: 9px;
+  }
+  .stats-bar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
 /* ── Mobile (≤640px) ── */
 @media (max-width: 640px) {
 
@@ -371,7 +621,6 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   .header { padding: 14px 16px; gap: 10px; flex-wrap: wrap; }
   .header h1 { font-size: 17px; letter-spacing: 0; }
   .header p { font-size: 11px; }
-  .sync-banner { padding: 10px 14px; }
 
   /* Tabs — horizontal scroll */
   .tab-nav { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0; }
@@ -381,17 +630,29 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   /* Stats + My tickets — stack in one column on narrow screens */
   .stats-bar { padding: 10px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .my-tickets-section { padding: 14px; }
-  .my-tickets-strip { grid-template-columns: 1fr; gap: 8px; }
+  .my-tickets-strip-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .my-tickets-strip-footer-nav {
+    max-width: 100%;
+  }
+  .my-tickets-badge {
+    margin-left: 0;
+    align-self: center;
+    text-align: center;
+  }
+  .ticket-pass {
+    width: clamp(168px, 78vw, 240px);
+    min-width: 168px;
+    max-width: 240px;
+  }
   .stat-card { padding: 6px 8px; }
   .stat-card .sn { font-size: 17px; }
   .stat-card .sl { font-size: 9px; }
 
-  /* Filters — 2-column grid */
+  /* Filters — padding (grid rules from ≤768px) */
   .filters-section { padding: 14px 14px; }
-  .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
-  .fg select, .fg input[type="text"] { min-width: unset; width: 100%; font-size: 12px; padding: 7px 9px; }
-  .fg input[type="text"] { min-width: unset; }
-  .btn-reset { grid-column: span 2; width: 100%; text-align: center; padding: 9px; }
 
   /* Results info */
   .results-info { padding: 8px 14px; font-size: 12px; }
@@ -416,9 +677,9 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   .group-match-row { padding: 7px 14px; font-size: 11px; }
   .gm-date { min-width: 50px; }
 
-  /* Bracket — horizontal scroll with hint */
-  .bracket-container { padding: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .scroll-hint { display: block; }
+  /* Bracket — horizontal scroll */
+  .bracket-container { padding: 14px; }
+  .bracket-scroll-surface { min-height: 480px; }
   .bracket-header h2 { font-size: 16px; }
   .bmatch { min-width: 170px; }
   .bteam { padding: 6px 8px; min-height: 30px; }
@@ -449,8 +710,6 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   </div>
 </div>
 
-<div id="syncBanner" class="sync-banner" aria-live="polite"></div>
-
 <nav class="tab-nav">
   <button type="button" class="tab-btn active" id="tabBtnSchedule" onclick="switchTab('schedule', this)">📅 Schedule</button>
   <button type="button" class="tab-btn" onclick="switchTab('groups', this)">📊 Group Tables</button>
@@ -463,14 +722,26 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <section class="my-tickets-section" aria-labelledby="myTicketsHeading">
     <div class="my-tickets-head">
       <h2 id="myTicketsHeading">🎫 My tickets</h2>
-      <span class="my-tickets-sub">Matches you marked (ET). Cards wrap below — click a card to jump to that row; +/− adjusts how many tickets you hold.</span>
+      <span class="my-tickets-sub">Matches you marked (ET). Scroll sideways for more cards — click a card to jump to that row; +/− adjusts how many tickets you hold.</span>
     </div>
-    <div id="myTicketsStrip" class="my-tickets-strip"></div>
+    <div class="my-tickets-scroll-wrap" id="myTicketsScrollWrap">
+      <div id="myTicketsStrip" class="my-tickets-strip"></div>
+    </div>
+    <div class="my-tickets-strip-footer" id="myTicketsStripFooter" hidden>
+      <div class="my-tickets-strip-footer-nav" role="group" aria-label="Scroll ticket cards">
+        <button type="button" class="my-tickets-nav-btn" id="myTicketsPrev" aria-label="Scroll tickets left">‹</button>
+        <div class="my-tickets-progress-wrap">
+          <div class="my-tickets-progress" role="presentation" aria-hidden="true"><div class="my-tickets-progress-fill" id="myTicketsProgressFill"></div></div>
+        </div>
+        <button type="button" class="my-tickets-nav-btn" id="myTicketsNext" aria-label="Scroll tickets right">›</button>
+      </div>
+      <span class="my-tickets-badge" id="myTicketsCountBadge">0 of 0</span>
+    </div>
   </section>
   <div class="filters-section">
     <div class="filters-title">🔍 Filter Matches</div>
     <div class="filters-grid">
-      <div class="fg"><label>Search Team / Venue</label><input type="text" id="searchInput" placeholder="e.g. Brazil, MetLife..."></div>
+      <div class="fg fg--search"><label>Search Team / Venue</label><input type="text" id="searchInput" placeholder="e.g. Brazil, MetLife..."></div>
       <div class="fg"><label>Stage</label><select id="stageFilter"><option value="">All Stages</option></select></div>
       <div class="fg"><label>Group</label><select id="groupFilter"><option value="">All Groups</option></select></div>
       <div class="fg"><label>Host Country</label><select id="countryFilter"><option value="">All Countries</option></select></div>
@@ -536,10 +807,14 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <div class="bracket-container">
     <div class="bracket-header">
       <h2>🏆 Knockout Bracket</h2>
-      <span style="font-size:12px;color:#6a88b0">Scores update automatically from Group Tables & Schedule</span>
+      <span style="font-size:12px;color:var(--text-muted)">Scores update automatically from Group Tables &amp; Schedule</span>
     </div>
-    <p class="scroll-hint">← Swipe to explore the full bracket →</p>
-    <div id="bracketWrap"></div>
+    <div class="bracket-viewport">
+      <div class="bracket-scroll-surface" id="bracketScrollSurface">
+        <div id="bracketWrap"></div>
+      </div>
+      <p id="bracketSwipeHint" class="bracket-swipe-hint" role="status">← Swipe to explore →</p>
+    </div>
   </div>
 </div>
 
@@ -909,24 +1184,11 @@ function applyRemotePayload(row) {
 }
 
 function updateSyncBanner() {
-  const el = document.getElementById('syncBanner');
-  if (!el) return;
-  if (!cloudEnabled()) {
-    el.style.display = 'flex';
-    el.innerHTML =
-      '<span><strong>This browser only</strong> — other browsers/devices stay separate unless you enable cloud in <code>SETUP.md</code>. ' +
-      'Two tabs in this browser stay in sync automatically.</span>';
-    return;
+  if (cloudUiState === 'error' && cloudEnabled()) {
+    console.warn(
+      'FIFA 2026 dashboard: cloud sync failed. Check Supabase URL/anon key, `database/supabase.sql`, and migrations `migration_add_bought.sql` / `migration_add_ticket_counts.sql`.',
+    );
   }
-  el.style.display = 'flex';
-  const status = cloudUiState === 'error'
-    ? '<span style="color:#ff9090">Cloud error — check Supabase URL/key and run <code>database/supabase.sql</code> plus migrations <code>migration_add_bought.sql</code> / <code>migration_add_ticket_counts.sql</code> if upgrading.</span>'
-    : cloudUiState === 'syncing'
-    ? '<span>Syncing…</span>'
-    : '<span style="color:#6ed49a">Cloud on</span>';
-  el.innerHTML =
-    '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">' + status +
-    '<span>· One shared board for everyone who uses this site (same Supabase project).</span></div>';
 }
 
 async function initCloudSync() {
@@ -1037,7 +1299,12 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   if (name === 'groups') refreshGroupsTab();
-  if (name === 'bracket') refreshBracket();
+  if (name === 'bracket') {
+    refreshBracket();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(resetBracketScrollHint);
+    });
+  }
 }
 
 // ============================================================
@@ -1046,6 +1313,36 @@ function switchTab(name, btn) {
 let sortKey = 'id', sortAsc = true;
 let filtered = [...ALL_MATCHES];
 let activeGroupView = 'ALL';
+let bracketSwipeHintTimer = null;
+
+function dismissBracketSwipeHint() {
+  var surface = document.getElementById('bracketScrollSurface');
+  var hint = document.getElementById('bracketSwipeHint');
+  if (surface) surface.removeEventListener('scroll', dismissBracketSwipeHint);
+  if (hint) {
+    hint.classList.remove('bracket-swipe-hint--visible');
+    hint.classList.add('bracket-swipe-hint--gone');
+  }
+  if (bracketSwipeHintTimer) {
+    clearTimeout(bracketSwipeHintTimer);
+    bracketSwipeHintTimer = null;
+  }
+}
+
+function resetBracketScrollHint() {
+  var hint = document.getElementById('bracketSwipeHint');
+  var surface = document.getElementById('bracketScrollSurface');
+  if (!hint || !surface) return;
+  hint.classList.remove('bracket-swipe-hint--gone');
+  hint.classList.add('bracket-swipe-hint--visible');
+  surface.removeEventListener('scroll', dismissBracketSwipeHint);
+  surface.addEventListener('scroll', dismissBracketSwipeHint, { passive: true });
+  if (bracketSwipeHintTimer) clearTimeout(bracketSwipeHintTimer);
+  bracketSwipeHintTimer = setTimeout(function () {
+    bracketSwipeHintTimer = null;
+    dismissBracketSwipeHint();
+  }, 3000);
+}
 
 function badgeClass(s) {
   if (s==='Group Stage') return 'badge-gs';
@@ -1159,6 +1456,39 @@ function escHtml(str) {
   return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 
+function updateMyTicketsScrollUi() {
+  var wrap = document.getElementById('myTicketsScrollWrap');
+  var footer = document.getElementById('myTicketsStripFooter');
+  var fill = document.getElementById('myTicketsProgressFill');
+  var badge = document.getElementById('myTicketsCountBadge');
+  var prev = document.getElementById('myTicketsPrev');
+  var next = document.getElementById('myTicketsNext');
+  if (!wrap || !footer || !fill || !badge || !prev || !next) return;
+  var n = ALL_MATCHES.filter(function (m) { return BOUGHT[m.id]; }).length;
+  var total = ALL_MATCHES.length;
+  badge.textContent = n + ' of ' + total;
+  if (!n) {
+    footer.hidden = true;
+    fill.style.width = '0%';
+    return;
+  }
+  footer.hidden = false;
+  var maxScroll = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+  var pct;
+  if (maxScroll <= 0) pct = 100;
+  else pct = Math.min(100, Math.round((wrap.scrollLeft / maxScroll) * 100));
+  fill.style.width = pct + '%';
+  prev.disabled = maxScroll <= 0 || wrap.scrollLeft <= 1;
+  next.disabled = maxScroll <= 0 || wrap.scrollLeft >= maxScroll - 1;
+}
+
+function scrollMyTicketsStrip(dir) {
+  var wrap = document.getElementById('myTicketsScrollWrap');
+  if (!wrap) return;
+  var step = Math.max(200, Math.round(wrap.clientWidth * 0.55));
+  wrap.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
 function renderMyTicketsStrip() {
   var el = document.getElementById('myTicketsStrip');
   if (!el) return;
@@ -1169,6 +1499,7 @@ function renderMyTicketsStrip() {
   });
   if (!list.length) {
     el.innerHTML = '<div class="my-tickets-empty">No tickets yet. Tick <strong>🎫</strong> on any row in the schedule, or choose <em>My tickets only</em> in filters after you have some.</div>';
+    updateMyTicketsScrollUi();
     return;
   }
   el.innerHTML = list.map(function (m) {
@@ -1196,14 +1527,21 @@ function renderMyTicketsStrip() {
           '<span><span class="team-flag" aria-hidden="true">' + escHtml(f2) + '</span>' + escHtml(m.t2) + '</span>' +
         '</div>' +
         '<div class="ticket-strip-foot">' +
-          '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
-          '<span>' + escHtml(m.timeET || m.time || '') + ' ET' + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
-          '<span>' + hostF + ' ' + escHtml(m.country) + '</span>' +
-          '<span>#' + m.id + '</span>' +
+          '<div class="ticket-strip-foot-row">' +
+            '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
+            '<span class="ticket-strip-meta-time">' + escHtml(m.timeET || m.time || '') + ' ET' + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
+          '</div>' +
+          '<div class="ticket-strip-foot-row">' +
+            '<span class="ticket-strip-host">' + hostF + ' ' + escHtml(m.country) + '</span>' +
+            '<span class="ticket-strip-matchid">#' + m.id + '</span>' +
+          '</div>' +
         '</div>' +
       '</button>' +
     '</div>';
   }).join('');
+  requestAnimationFrame(function () {
+    updateMyTicketsScrollUi();
+  });
 }
 
 function scrollToMatchRow(id) {
@@ -1234,7 +1572,7 @@ function renderSchedule() {
   });
   const tbody=document.getElementById('tableBody');
   const noR=document.getElementById('noResults');
-  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches <span style="color:#4a6080;font-weight:500">· times Eastern (ET)</span>`;
+  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches <span style="color:var(--text-muted);font-weight:500">· times Eastern (ET)</span>`;
   if(!data.length){
     tbody.innerHTML='';
     noR.style.display='block';
@@ -1248,7 +1586,7 @@ function renderSchedule() {
     const s=sc[m.id]||{t1:'',t2:''};
     const grpCell=m.group&&m.group!=='-'
       ?`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1e3a6e;color:#7ab4ff;font-size:10px;font-weight:700;text-align:center;line-height:20px">${m.group}</span>`
-      :`<span style="color:#4a6080">—</span>`;
+      :`<span style="color:var(--text-muted-dim)">—</span>`;
     const tick = bt[m.id] ? ' checked' : '';
     const trClass = bt[m.id] ? 'schedule-row row-ticket' : 'schedule-row';
     return `<tr class="${trClass}" data-mid="${m.id}">
@@ -1298,7 +1636,7 @@ function updateStatsBar() {
   }, 0);
   document.getElementById('statsBar').innerHTML=`
     <div class="stat-card"><div class="sn">${filtered.length}</div><div class="sl">Matches</div></div>
-    <div class="stat-card"><div class="sn" style="font-size:17px">${savedMatchCount}<span style="color:#5a7399;font-weight:600"> / </span>${ticketQtyTotal}</div><div class="sl">Tickets (matches / qty)</div></div>
+    <div class="stat-card"><div class="sn" style="font-size:17px">${savedMatchCount}<span style="color:var(--text-muted);font-weight:600"> / </span>${ticketQtyTotal}</div><div class="sl">Tickets (matches / qty)</div></div>
     <div class="stat-card"><div class="sn">🇺🇸 ${usa}</div><div class="sl">USA Games</div></div>
     <div class="stat-card"><div class="sn">🇲🇽 ${mex}</div><div class="sl">Mexico Games</div></div>
     <div class="stat-card"><div class="sn">🇨🇦 ${can}</div><div class="sl">Canada Games</div></div>
@@ -1351,11 +1689,35 @@ function buildGroupSelector() {
 }
 
 function selectGroupView(g, btn) {
-  activeGroupView=g;
-  document.querySelectorAll('.group-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else document.querySelector('.group-btn').classList.add('active');
+  activeGroupView = g;
+  document.querySelectorAll('#groupSelector .group-btn').forEach(function (b) { b.classList.remove('active'); });
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    var sel = document.getElementById('groupSelector');
+    if (sel) {
+      var buttons = sel.querySelectorAll('.group-btn');
+      if (g === 'ALL' && buttons[0]) buttons[0].classList.add('active');
+      else {
+        for (var i = 0; i < buttons.length; i++) {
+          if (buttons[i].textContent === 'Group ' + g) {
+            buttons[i].classList.add('active');
+            break;
+          }
+        }
+      }
+    }
+  }
   refreshGroupsTab();
+  setTimeout(function () {
+    if (g === 'ALL') {
+      var grid = document.getElementById('groupsGrid');
+      if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      var card = document.getElementById('group-card-' + g);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 60);
 }
 
 function refreshGroupsTab() {
@@ -1405,11 +1767,11 @@ function buildGroupCard(g) {
     </div>`;
   }).join('');
 
-  return `<div class="group-card">
+  return `<div class="group-card" id="group-card-${g}">
     <div class="group-card-header">
       <div class="group-letter">${g}</div>
       <span>Group ${g}</span>
-      <span style="margin-left:auto;font-size:11px;color:#6a88b0">
+      <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">
         ${standings.filter(s=>s.mp>0).length===0?'No results yet':standings[0].mp+' match'+( standings[0].mp===1?'':'es')+' played per team (avg)'}
       </span>
     </div>
@@ -1478,7 +1840,7 @@ function getDisplayName(placeholder) {
 
 function buildBracketMatch(mid) {
   const m = ALL_MATCHES.find(x => x.id === mid);
-  if (!m) return '<div class="bmatch"><div style="padding:8px;color:#4a6080;font-size:11px">TBD</div></div>';
+  if (!m) return '<div class="bmatch"><div style="padding:8px;color:var(--text-muted);font-size:11px">TBD</div></div>';
   const sc = SCORES[mid] || {t1: null, t2: null};
 
   const t1resolved = resolveTeam(m.t1);
@@ -1598,7 +1960,7 @@ function refreshBracket() {
         </div>
         ${buildFinalTeams(104)}
       </div>
-      <div style="font-size:11px;color:#6a88b0;text-align:center;letter-spacing:.5px;">── 🥉 3rd Place ──</div>
+      <div style="font-size:11px;color:var(--text-muted);text-align:center;letter-spacing:.5px;">── 🥉 3rd Place ──</div>
       <div class="bmatch third-card" style="width:240px;">
         <div class="bmatch-num" style="color:#90c090;font-weight:700;padding:7px 12px 2px;">
           M103 · Jul 18 · Hard Rock Stadium
@@ -1669,6 +2031,18 @@ function buildFinalTeams(mid) {
   renderSchedule();
   buildGroupSelector();
   updateSyncBanner();
+
+  (function wireMyTicketsStripNav() {
+    var wrap = document.getElementById('myTicketsScrollWrap');
+    var prev = document.getElementById('myTicketsPrev');
+    var next = document.getElementById('myTicketsNext');
+    if (wrap && prev && next) {
+      wrap.addEventListener('scroll', function () { updateMyTicketsScrollUi(); }, { passive: true });
+      prev.addEventListener('click', function () { scrollMyTicketsStrip(-1); });
+      next.addEventListener('click', function () { scrollMyTicketsStrip(1); });
+    }
+    window.addEventListener('resize', function () { updateMyTicketsScrollUi(); });
+  })();
 
   ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter','ticketFilter']
     .forEach(function (id) {

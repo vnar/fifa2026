@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3a6e"/>
+      <stop offset="50%" style="stop-color:#0d2347"/>
+      <stop offset="100%" style="stop-color:#0a1628"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="260" text-anchor="middle" fill="#c9a84c" font-family="system-ui,sans-serif" font-size="72" font-weight="800">FIFA WORLD CUP 2026</text>
+  <text x="600" y="360" text-anchor="middle" fill="#a8c4e0" font-family="system-ui,sans-serif" font-size="36">Schedule · Groups · Bracket</text>
+  <text x="600" y="480" text-anchor="middle" fill="#6ed49a" font-family="system-ui,sans-serif" font-size="28"><ú<ø <ò<ý <è<æ</text>
+</svg>

@@ -33,14 +33,14 @@ const keysAfter = await page.evaluate(() =>
   Object.keys(localStorage).filter((k) => k.startsWith('fifa2026')),
 );
 
-const banner = await page.locator('#syncBanner').innerText().catch(() => '');
+const title = await page.title().catch(() => '');
 const finalUrl = page.url();
 
 await browser.close();
 
 console.log(
   JSON.stringify(
-    { base, url: finalUrl, firstScoreAfterReload: val, keysBefore, keysAfter, banner: banner.slice(0, 200) },
+    { base, url: finalUrl, title, firstScoreAfterReload: val, keysBefore, keysAfter },
     null,
     2,
   ),
