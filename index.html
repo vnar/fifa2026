@@ -772,21 +772,37 @@ function applyFilters() {
 }
 
 function sortTable(key) {
-  sortKey = key; sortAsc = sortKey===key ? !sortAsc : true;
+  if (sortKey === key) sortAsc = !sortAsc;
+  else {
+    sortKey = key;
+    sortAsc = true;
+  }
   renderSchedule();
 }
 
 function resetFilters() {
+  sortKey = 'id';
+  sortAsc = true;
   ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.tagName==='SELECT'?el.selectedIndex=0:el.value='';
   });
   filtered=[...ALL_MATCHES]; renderSchedule(); updateStatsBar();
 }
 
+function sortColumnValue(m) {
+  if (sortKey === 'id' || sortKey === 'Match #') return m.id;
+  if (sortKey === 'Team 1') return m.t1 || '';
+  if (sortKey === 'Team 2') return m.t2 || '';
+  if (sortKey === 'Time (ET)') return m.time || '';
+  const v = m[sortKey];
+  return v !== undefined && v !== null ? v : m.id;
+}
+
 function renderSchedule() {
   const data=[...filtered].sort((a,b)=>{
-    let va=a[sortKey]||a.id, vb=b[sortKey]||b.id;
-    if(sortKey==='id'||sortKey==='Match #'){va=a.id;vb=b.id;}
+    let va = sortColumnValue(a), vb = sortColumnValue(b);
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
     if(va<vb)return sortAsc?-1:1; if(va>vb)return sortAsc?1:-1; return 0;
   });
   const tbody=document.getElementById('tableBody');
