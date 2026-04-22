@@ -950,6 +950,26 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 <script>window.__FIFA_SUPABASE__ = window.__FIFA_SUPABASE__ || {};</script>
 <script src="config.js"></script>
 <script>
+(function () {
+  /**
+   * Optional built-in Supabase pool (same keys as config.js).
+   * Paste your Project URL + anon key here for static hosting when you cannot ship config.js.
+   * Warning: keys are visible in source — use only for a casual shared board (see SETUP.md).
+   */
+  var BUILTIN_SUPABASE = { url: '', anonKey: '', publicBoardUrl: '' };
+  var c = window.__FIFA_SUPABASE__ || {};
+  if ((!String(c.url || '').trim() || !String(c.anonKey || '').trim()) &&
+      String(BUILTIN_SUPABASE.url || '').trim().length > 12 &&
+      String(BUILTIN_SUPABASE.anonKey || '').trim().length > 32) {
+    window.__FIFA_SUPABASE__ = {
+      url: String(BUILTIN_SUPABASE.url).trim(),
+      anonKey: String(BUILTIN_SUPABASE.anonKey).trim(),
+      publicBoardUrl: String(BUILTIN_SUPABASE.publicBoardUrl || '').trim(),
+    };
+  }
+})();
+</script>
+<script>
 // ============================================================
 //  DATA — kickoffs are U.S. Eastern Time (ET). Curated; verify at fifa.com (see scripts/SCHEDULE_VERIFICATION.md).
 // ============================================================
@@ -1336,6 +1356,28 @@ async function fetchRoomRow() {
   return arr[0] || null;
 }
 
+/** Create empty global row if missing so every client can read/write the same board. */
+async function ensureGlobalRoomExists() {
+  if (!cloudEnabled() || applyingRemote) return;
+  var existing = await fetchRoomRow();
+  if (existing) return;
+  const base = String(SB_CFG.url || '').replace(/\/$/, '');
+  const url = base + '/rest/v1/fifa_rooms';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: sbHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify([{
+      id: CLOUD_ROW_ID,
+      scores: {},
+      comments: {},
+      bought: {},
+      ticket_counts: {},
+      updated_at: new Date().toISOString(),
+    }]),
+  });
+  if (!r.ok && r.status !== 409) throw new Error(await r.text());
+}
+
 async function pushCloudSilent() {
   if (!cloudEnabled() || applyingRemote) return;
   const base = String(SB_CFG.url || '').replace(/\/$/, '');
@@ -1467,10 +1509,14 @@ function applyRemotePayload(row) {
   if (row.updated_at && lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
   applyingRemote = true;
   lastRemoteUpdated = row.updated_at || null;
+  var prevScores = Object.assign({}, SCORES);
+  var prevComments = Object.assign({}, COMMENTS);
   var prevBought = Object.assign({}, BOUGHT);
   var prevTicketCounts = Object.assign({}, TICKET_COUNTS);
-  SCORES = row.scores && typeof row.scores === 'object' ? row.scores : {};
-  COMMENTS = row.comments && typeof row.comments === 'object' ? row.comments : {};
+  var rs = row.scores && typeof row.scores === 'object' ? row.scores : {};
+  var rc = row.comments && typeof row.comments === 'object' ? row.comments : {};
+  SCORES = Object.assign({}, prevScores, rs);
+  COMMENTS = Object.assign({}, prevComments, rc);
   var remoteBought = normalizeBought(row.bought);
   var remoteTc = normalizeTicketCounts(row.ticket_counts);
   if (remoteHasTicketMarks(row.bought, row.ticket_counts)) {
@@ -1513,13 +1559,12 @@ async function initCloudSync() {
   cloudUiState = 'syncing';
   updateSyncBanner();
   try {
-    const row = await fetchRoomRow();
-    const remoteHas = row && (
-      (row.scores && Object.keys(row.scores).length) ||
-      (row.comments && Object.keys(row.comments).some(function (k) { return row.comments[k]; })) ||
-      (row.bought && Object.keys(row.bought).some(function (k) { return row.bought[k]; })) ||
-      (row.ticket_counts && Object.keys(row.ticket_counts).some(function (k) { return row.ticket_counts[k] > 0; }))
-    );
+    let row = await fetchRoomRow();
+    if (!row) {
+      await ensureGlobalRoomExists();
+      row = await fetchRoomRow();
+    }
+    const remoteHas = !!row;
     const localHas = Object.keys(SCORES).length > 0 || Object.keys(COMMENTS).some(function (k) { return COMMENTS[k]; }) ||
       Object.keys(BOUGHT).some(function (k) { return BOUGHT[k]; }) ||
       Object.keys(TICKET_COUNTS).some(function (k) { return TICKET_COUNTS[k] > 0; });

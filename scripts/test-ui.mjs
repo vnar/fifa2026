@@ -1,6 +1,6 @@
 /**
  * UI smoke tests: filter reset + ticket row highlight + destructive reset confirm.
- * Requires: python3 -m http.server 8765 from repo root.
+ * Default base: http://127.0.0.1:8765/ — or set TEST_BASE. Prefer `npm test`, which starts a server on a free port.
  * Run: node scripts/test-ui.mjs
  */
 import assert from 'assert';

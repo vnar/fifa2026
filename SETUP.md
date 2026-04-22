@@ -14,9 +14,13 @@ The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The
 
 1. Add Actions secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
 2. **Settings → Pages** → Source: **GitHub Actions**.
-3. Push `main` (or run **Deploy GitHub Pages**). The workflow publishes `index.html` + generated `config.js`.
+3. Push `main` (or run **Deploy GitHub Pages**). The workflow writes **`config.js`** and also **inlines the same Supabase URL + anon key into `index.html`**, so the pool works even if a second request to `config.js` fails (ad blockers, odd paths).
 
 Anyone who loads the deployed site with cloud configured shares the **same** `global` row (updates within a few seconds via polling). Without cloud, each browser keeps its own copy in `localStorage`; two tabs on the same device still sync via the `storage` event.
+
+### Optional: keys only in the HTML repo (no Actions secrets)
+
+In `index.html`, find **`BUILTIN_SUPABASE`** (right after `config.js`) and paste **Project URL** and **anon key** into `url` / `anonKey`. They are public to anyone who views source—same as shipping `config.js`. Use a throwaway Supabase project for a casual pool.
 
 ### Sharing the link (everyone sees the same tickets/scores)
 
@@ -53,12 +57,21 @@ Group-stage and knockout pairings are rebuilt from the post–draw schedule (see
 npm run build:schedule   # writes scripts/all_matches_generated.js — then merge into index.html ALL_MATCHES if you update the source table
 ```
 
-## Automated check (local persistence)
+## Automated tests
 
-With `python3 -m http.server 8765` running:
+From the repo root (no separate terminal for `http.server` — **`npm test`** picks a free port and serves the site itself):
 
 ```bash
-npm install && npx playwright install chromium && npm run test:persist && npm run test:ui
+npm install && npx playwright install chromium && npm test
 ```
 
-`test:persist` checks that a score survives reload. `test:ui` checks filter reset, ticket strip, and destructive reset confirmation.
+To use an **existing** server instead, set **`TEST_BASE`** (for example `http://127.0.0.1:8765/`) and run the individual scripts, or `TEST_BASE=... node scripts/test-with-server.mjs`.
+
+- **`npm test`** runs `test:persist`, `test:ui`, and **`test:cloud`**.
+- **`test:persist`** — score, **ticket**, and **note** survive reload (`localStorage`).
+- **`test:ui`** — filter reset, ticket strip, destructive reset confirm.
+- **`test:cloud`** — **skipped** unless you set `TEST_SUPABASE_URL` and `TEST_SUPABASE_ANON_KEY` (use a **disposable** Supabase project; the test writes match `1` score `7`, checks a ticket, and sets a comment). Optional: `TEST_MATCH_ID`.
+
+```bash
+TEST_SUPABASE_URL='https://xxxx.supabase.co' TEST_SUPABASE_ANON_KEY='eyJ...' npm run test:cloud
+```

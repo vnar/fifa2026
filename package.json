@@ -2,8 +2,10 @@
   "name": "fifa2026",
   "private": true,
   "scripts": {
+    "test": "node scripts/test-with-server.mjs",
     "test:persist": "node scripts/test-persistence.mjs",
     "test:ui": "node scripts/test-ui.mjs",
+    "test:cloud": "node scripts/test-cloud-roundtrip.mjs",
     "build:schedule": "node scripts/build-schedule.mjs > scripts/all_matches_generated.js"
   },
   "devDependencies": {
