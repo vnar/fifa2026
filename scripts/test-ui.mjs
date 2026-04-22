@@ -34,6 +34,9 @@ await page.waitForTimeout(200);
 const cls = await firstRow.getAttribute('class');
 assert(cls && cls.includes('row-ticket'), 'expected tr.row-ticket after checking ticket, class=' + cls);
 
+const stripCount = await page.locator('.ticket-strip-card').count();
+assert(stripCount >= 1, 'expected My tickets strip to list at least one card, got ' + stripCount);
+
 // --- Dismissing reset confirm keeps scores ---
 const firstScoreInp = page.locator('#tableBody .score-inp').first();
 await firstScoreInp.fill('9');
@@ -47,6 +50,13 @@ await page.click('#btnResetFilters');
 await page.waitForTimeout(150);
 const stillNine = await page.locator('#tableBody .score-inp').first().inputValue();
 assert.strictEqual(stillNine, '9', 'dismissing reset confirm should keep scores');
+
+await page.selectOption('#ticketFilter', { value: 'yes' });
+await page.waitForTimeout(200);
+const onlyTicketRows = await page.locator('#tableBody tr').count();
+assert.strictEqual(onlyTicketRows, 1, 'My tickets only should show exactly one row');
+await page.selectOption('#ticketFilter', { value: '' });
+await page.waitForTimeout(150);
 
 // --- Filter + reset (confirm) ---
 await page.selectOption('#stageFilter', { label: 'FINAL' });
@@ -66,6 +76,9 @@ assert.strictEqual(firstScoreAfterWipe, '', 'reset accept should clear scores in
 
 const ticketStillChecked = await page.locator('#tableBody tr').first().locator('input.ticket-cb').isChecked();
 assert.strictEqual(ticketStillChecked, false, 'reset accept should clear ticket selection');
+
+const stripEmptyVisible = await page.locator('.my-tickets-empty').isVisible();
+assert.strictEqual(stripEmptyVisible, true, 'My tickets strip should show empty state after wipe');
 
 // --- Reset returns to “home”: schedule tab, scroll top (after scroll) ---
 await page.evaluate(() => window.scrollTo(0, 800));

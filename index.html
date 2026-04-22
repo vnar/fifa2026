@@ -30,6 +30,122 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .stat-card .sn { font-size: 22px; font-weight: 800; color: #c9a84c; }
 .stat-card .sl { font-size: 10px; color: #6a88b0; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
+/* MY TICKETS — strip above filters */
+.my-tickets-section {
+  padding: 18px 32px 16px;
+  background: linear-gradient(180deg, #0f2244 0%, #0d1f40 100%);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.35);
+}
+.my-tickets-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.my-tickets-head h2 {
+  font-size: 13px;
+  font-weight: 800;
+  color: #c9a84c;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.my-tickets-sub {
+  font-size: 11px;
+  color: #6a88b0;
+}
+.my-tickets-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.my-tickets-strip::-webkit-scrollbar { height: 6px; }
+.my-tickets-strip::-webkit-scrollbar-thumb { background: #1e3a6e; border-radius: 3px; }
+.my-tickets-empty {
+  font-size: 13px;
+  color: #6a88b0;
+  padding: 14px 18px;
+  background: #0a1628;
+  border: 1px dashed #2a4a7a;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 1.45;
+}
+.ticket-strip-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  min-width: 232px;
+  max-width: 300px;
+  background: linear-gradient(150deg, #142a50 0%, #0a1628 55%);
+  border: 1px solid #2a4a7a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.ticket-strip-card:hover {
+  border-color: #c9a84c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201, 168, 76, 0.12);
+}
+.ticket-strip-card:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 2px;
+}
+.ticket-strip-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: #8fa3c4;
+}
+.ticket-strip-date {
+  font-weight: 700;
+  color: #e8f0ff;
+  letter-spacing: 0.02em;
+}
+.ticket-strip-icon { font-size: 20px; line-height: 1; }
+.ticket-strip-teams {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f0f4fc;
+  line-height: 1.35;
+}
+.ticket-strip-teams .vs {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6a88b0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ticket-strip-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 10px;
+  color: #6a88b0;
+}
+#matchTable tbody tr.row-flash { animation: rowFlash 1s ease-out 1; }
+@keyframes rowFlash {
+  0% { filter: brightness(1); }
+  35% { filter: brightness(1.35); }
+  100% { filter: brightness(1); }
+}
+
 /* FILTERS */
 .filters-section { padding: 16px 32px; background: #0d1f40; border-bottom: 1px solid #1e3358; }
 .filters-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6a88b0; margin-bottom: 10px; }
@@ -171,7 +287,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 @media (max-width: 1024px) {
   .header { padding: 16px 20px; }
   .tab-nav { padding: 0 16px; }
-  .stats-bar, .filters-section, .results-info { padding-left: 20px; padding-right: 20px; }
+  .stats-bar, .my-tickets-section, .filters-section, .results-info { padding-left: 20px; padding-right: 20px; }
   .table-container { padding: 16px 20px; }
   .groups-container, .bracket-container { padding: 20px; }
   .groups-grid { grid-template-columns: 1fr; }
@@ -193,6 +309,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 
   /* Stats bar */
   .stats-bar { padding: 10px 14px; gap: 8px; }
+  .my-tickets-section { padding: 14px; }
   .stat-card { min-width: 80px; padding: 6px 12px; flex: 1; }
   .stat-card .sn { font-size: 18px; }
   .stat-card .sl { font-size: 9px; }
@@ -270,6 +387,13 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 <!-- ============ SCHEDULE TAB ============ -->
 <div id="tab-schedule" class="tab-panel active">
   <div class="stats-bar" id="statsBar"></div>
+  <section class="my-tickets-section" aria-labelledby="myTicketsHeading">
+    <div class="my-tickets-head">
+      <h2 id="myTicketsHeading">🎫 My tickets</h2>
+      <span class="my-tickets-sub">Matches you marked below — click a card to jump to that row in the schedule (filters clear so it is visible).</span>
+    </div>
+    <div id="myTicketsStrip" class="my-tickets-strip"></div>
+  </section>
   <div class="filters-section">
     <div class="filters-title">🔍 Filter Matches</div>
     <div class="filters-grid">
@@ -283,6 +407,12 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
           <option value="">All Months</option>
           <option value="06">June 2026</option>
           <option value="07">July 2026</option>
+        </select>
+      </div>
+      <div class="fg"><label>🎫 Tickets</label>
+        <select id="ticketFilter" title="Show only matches you marked with a ticket">
+          <option value="">All matches</option>
+          <option value="yes">My tickets only</option>
         </select>
       </div>
       <button type="button" class="btn btn-reset" id="btnResetFilters" title="Clears filters and home view. You must confirm to permanently erase scores, notes, and ticket marks.">↺ Reset</button>
@@ -622,7 +752,6 @@ function applyRemotePayload(row) {
   BOUGHT = row.bought && typeof row.bought === 'object' ? row.bought : {};
   persistLocal();
   renderSchedule();
-  updateStatsBar();
   refreshGroupsTab();
   refreshBracket();
   applyingRemote = false;
@@ -769,17 +898,19 @@ function applyFilters() {
   const country=document.getElementById('countryFilter').value;
   const city=document.getElementById('cityFilter').value;
   const month=document.getElementById('monthFilter').value;
+  const tickEl = document.getElementById('ticketFilter');
+  const tickOnly = tickEl ? tickEl.value : '';
   filtered = ALL_MATCHES.filter(m=>{
     if(stage && m.stage!==stage) return false;
     if(grp && m.group!==grp) return false;
     if(country && m.country!==country) return false;
     if(city && m.city!==city) return false;
     if(month && !m.date.includes(`-${month}-`)) return false;
+    if(tickOnly === 'yes' && !BOUGHT[m.id]) return false;
     if(search){const h=[m.t1,m.t2,m.venue,m.city,m.stage,m.group].join(' ').toLowerCase();if(!h.includes(search))return false;}
     return true;
   });
   renderSchedule();
-  updateStatsBar();
 }
 
 function sortTable(key) {
@@ -805,7 +936,7 @@ function resetFilters(ev) {
 
   sortKey = 'id';
   sortAsc = true;
-  ['searchInput', 'stageFilter', 'groupFilter', 'countryFilter', 'cityFilter', 'monthFilter'].forEach(function (id) {
+  ['searchInput', 'stageFilter', 'groupFilter', 'countryFilter', 'cityFilter', 'monthFilter', 'ticketFilter'].forEach(function (id) {
     const el = document.getElementById(id);
     if (!el) return;
     if (el.tagName === 'SELECT' || el.tagName === 'INPUT') el.value = '';
@@ -844,6 +975,59 @@ function sortColumnValue(m) {
   return v !== undefined && v !== null ? v : m.id;
 }
 
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+
+function renderMyTicketsStrip() {
+  var el = document.getElementById('myTicketsStrip');
+  if (!el) return;
+  var list = ALL_MATCHES.filter(function (m) { return BOUGHT[m.id]; }).sort(function (a, b) {
+    var da = a.date || '', db = b.date || '';
+    if (da !== db) return da < db ? -1 : da > db ? 1 : 0;
+    return (a.id || 0) - (b.id || 0);
+  });
+  if (!list.length) {
+    el.innerHTML = '<div class="my-tickets-empty">No tickets yet. Tick <strong>🎫</strong> on any row in the schedule, or choose <em>My tickets only</em> in filters after you have some.</div>';
+    return;
+  }
+  el.innerHTML = list.map(function (m) {
+    var flag = FLAGS[m.country] || '🌎';
+    return '<button type="button" class="ticket-strip-card" onclick="scrollToMatchRow(' + m.id + ')" aria-label="Jump to match ' + m.id + '">' +
+      '<div class="ticket-strip-meta">' +
+        '<span class="ticket-strip-date">' + escHtml(m.date) + (m.day ? ' · ' + escHtml(m.day) : '') + '</span>' +
+        '<span class="ticket-strip-icon" aria-hidden="true">🎫</span>' +
+      '</div>' +
+      '<div class="ticket-strip-teams">' + escHtml(m.t1) + '<span class="vs"> vs </span>' + escHtml(m.t2) + '</div>' +
+      '<div class="ticket-strip-foot">' +
+        '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
+        '<span>' + escHtml(m.time || '') + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
+        '<span>' + flag + ' ' + escHtml(m.country) + '</span>' +
+        '<span>#' + m.id + '</span>' +
+      '</div>' +
+    '</button>';
+  }).join('');
+}
+
+function scrollToMatchRow(id) {
+  ['searchInput', 'stageFilter', 'groupFilter', 'countryFilter', 'cityFilter', 'monthFilter', 'ticketFilter'].forEach(function (fid) {
+    var el = document.getElementById(fid);
+    if (el && (el.tagName === 'SELECT' || el.tagName === 'INPUT')) el.value = '';
+  });
+  applyFilters();
+  var schedBtn = document.getElementById('tabBtnSchedule');
+  switchTab('schedule', schedBtn);
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      var tr = document.querySelector('#tableBody tr[data-mid="' + id + '"]');
+      if (!tr) return;
+      tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      tr.classList.add('row-flash');
+      setTimeout(function () { tr.classList.remove('row-flash'); }, 1000);
+    });
+  });
+}
+
 function renderSchedule() {
   const data=[...filtered].sort((a,b)=>{
     let va = sortColumnValue(a), vb = sortColumnValue(b);
@@ -854,7 +1038,13 @@ function renderSchedule() {
   const tbody=document.getElementById('tableBody');
   const noR=document.getElementById('noResults');
   document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches`;
-  if(!data.length){tbody.innerHTML='';noR.style.display='block';return;}
+  if(!data.length){
+    tbody.innerHTML='';
+    noR.style.display='block';
+    renderMyTicketsStrip();
+    updateStatsBar();
+    return;
+  }
   noR.style.display='none';
   const sc=SCORES, cm=COMMENTS, bt=BOUGHT;
   tbody.innerHTML=data.map(m=>{
@@ -863,8 +1053,8 @@ function renderSchedule() {
       ?`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1e3a6e;color:#7ab4ff;font-size:10px;font-weight:700;text-align:center;line-height:20px">${m.group}</span>`
       :`<span style="color:#4a6080">—</span>`;
     const tick = bt[m.id] ? ' checked' : '';
-    const rowClass = bt[m.id] ? ' class="row-ticket"' : '';
-    return `<tr${rowClass}>
+    const trClass = bt[m.id] ? 'schedule-row row-ticket' : 'schedule-row';
+    return `<tr class="${trClass}" data-mid="${m.id}">
       <td class="match-num">${m.id}</td>
       <td class="td-ticket"><input type="checkbox" class="ticket-cb" id="ticket-${m.id}" name="ticket_${m.id}" aria-label="I have a ticket for this match"${tick} onchange="setBought(${m.id},this.checked)"></td>
       <td>${m.date}</td>
@@ -895,6 +1085,8 @@ function renderSchedule() {
       </td>
     </tr>`;
   }).join('');
+  renderMyTicketsStrip();
+  updateStatsBar();
 }
 
 function updateStatsBar() {
@@ -903,8 +1095,10 @@ function updateStatsBar() {
   const can=filtered.filter(m=>m.country==='Canada').length;
   const venues=new Set(filtered.map(m=>m.venue)).size;
   const played=filtered.filter(m=>SCORES[m.id]&&SCORES[m.id].t1!=null&&SCORES[m.id].t2!=null).length;
+  const savedTickets = Object.keys(BOUGHT).filter(function (k) { return BOUGHT[k]; }).length;
   document.getElementById('statsBar').innerHTML=`
     <div class="stat-card"><div class="sn">${filtered.length}</div><div class="sl">Matches</div></div>
+    <div class="stat-card"><div class="sn">🎫 ${savedTickets}</div><div class="sl">Tickets saved</div></div>
     <div class="stat-card"><div class="sn">🇺🇸 ${usa}</div><div class="sl">USA Games</div></div>
     <div class="stat-card"><div class="sn">🇲🇽 ${mex}</div><div class="sl">Mexico Games</div></div>
     <div class="stat-card"><div class="sn">🇨🇦 ${can}</div><div class="sl">Canada Games</div></div>
@@ -1271,11 +1465,10 @@ function buildFinalTeams(mid) {
   populateScheduleFilters();
   filtered = [...ALL_MATCHES];
   renderSchedule();
-  updateStatsBar();
   buildGroupSelector();
   updateSyncBanner();
 
-  ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter']
+  ['searchInput','stageFilter','groupFilter','countryFilter','cityFilter','monthFilter','ticketFilter']
     .forEach(function (id) {
       const el = document.getElementById(id);
       if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', applyFilters);
@@ -1295,7 +1488,6 @@ function buildFinalTeams(mid) {
       COMMENTS = c ? JSON.parse(c) : {};
       BOUGHT = b ? JSON.parse(b) : {};
       renderSchedule();
-      updateStatsBar();
       refreshGroupsTab();
       refreshBracket();
     } catch (err) {}
