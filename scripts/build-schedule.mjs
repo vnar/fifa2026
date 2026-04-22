@@ -1,6 +1,13 @@
 /**
  * Parses Roadtrips markdown (FIFA draw–aligned) → ALL_MATCHES lines.
  * Run from repo: node scripts/build-schedule.mjs
+ *
+ * SCHEDULE VERIFICATION (manual, required for accuracy):
+ * Compare generated kickoff times (Eastern Time) against the official list at
+ * https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026
+ * before treating output as authoritative. Do not scrape FIFA from this script;
+ * update scripts/schedule-source.txt from verified published data only.
+ * See scripts/SCHEDULE_VERIFICATION.md in this repo.
  */
 import fs from 'fs';
 import path from 'path';

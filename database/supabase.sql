@@ -6,6 +6,7 @@ create table if not exists public.fifa_rooms (
   scores jsonb not null default '{}'::jsonb,
   comments jsonb not null default '{}'::jsonb,
   bought jsonb not null default '{}'::jsonb,
+  ticket_counts jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 

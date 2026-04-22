@@ -1,13 +1,14 @@
 # FIFA 2026 dashboard — cloud sync and deploy
 
-The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The app uses **one row** with `id = 'global'` for scores, notes, and ticket highlights — no rooms, no `?room=` parameter.
+The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The app uses **one row** with `id = 'global'` for scores, notes, ticket highlights, and per-match ticket quantities — no rooms, no `?room=` parameter.
 
 ## One-time: create the database
 
 1. Create a free Supabase project.
 2. **SQL Editor** → paste `database/supabase.sql` → Run.
 3. If you created the table **before** the `bought` column existed, also run `database/migration_add_bought.sql` once.
-4. **Project Settings → API** → copy **Project URL** and **anon public** key.
+4. If the table predates **ticket quantities**, run `database/migration_add_ticket_counts.sql` once (new installs from `supabase.sql` already include it).
+5. **Project Settings → API** → copy **Project URL** and **anon public** key.
 
 ## GitHub Pages
 
@@ -33,7 +34,7 @@ Anonymous policies on `fifa_rooms` mean anyone with your anon key (visible in th
 
 ## Match schedule source
 
-Group-stage and knockout pairings are rebuilt from the post–draw schedule (see `scripts/schedule-source.txt` and `scripts/build-schedule.mjs`). Kickoffs are **U.S. Eastern** style labels for display. Always confirm tickets and times on [fifa.com](https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/matches) before travel.
+Group-stage and knockout pairings are rebuilt from the post–draw schedule (see `scripts/schedule-source.txt` and `scripts/build-schedule.mjs`). Kickoffs are stored and shown as **US Eastern Time (ET)**. See `scripts/SCHEDULE_VERIFICATION.md` for how to verify data against [fifa.com](https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026) before travel.
 
 ```bash
 npm run build:schedule   # writes scripts/all_matches_generated.js — then merge into index.html ALL_MATCHES if you update the source table
@@ -47,4 +48,4 @@ With `python3 -m http.server 8765` running:
 npm install && npx playwright install chromium && npm run test:persist && npm run test:ui
 ```
 
-`test:persist` checks that a score survives reload. `test:ui` checks filter reset and ticket row highlighting.
+`test:persist` checks that a score survives reload. `test:ui` checks filter reset, ticket strip, and destructive reset confirmation.

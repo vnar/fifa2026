@@ -12,6 +12,8 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .header { background: linear-gradient(135deg,#1a3a6e 0%,#0d2347 50%,#1a1a2e 100%); padding: 20px 32px; border-bottom: 2px solid #c9a84c; display: flex; align-items: center; gap: 16px; }
 .header h1 { font-size: 26px; font-weight: 800; color: #c9a84c; letter-spacing: 1px; text-transform: uppercase; }
 .header p { color: #8fa3c4; font-size: 12px; margin-top: 3px; }
+.header-et-note { font-size: 11px; color: #6a88b0; margin-top: 8px; max-width: 720px; line-height: 1.45; border-left: 3px solid #c9a84c; padding-left: 10px; }
+.header-et-note strong { color: #c9a84c; font-weight: 700; }
 
 .sync-banner { display: none; align-items: center; gap: 12px; padding: 10px 32px; background: #0f2244; border-bottom: 1px solid #1e3358; font-size: 12px; color: #8fa3c4; }
 .sync-banner code { font-size: 11px; background: #0a1628; padding: 2px 6px; border-radius: 4px; border: 1px solid #1e3a6e; }
@@ -74,33 +76,49 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   text-align: center;
   line-height: 1.45;
 }
-.ticket-strip-card {
+/* Ticket “pass” cards — stub left edge + subtle glow */
+.ticket-pass {
   flex: 0 0 auto;
   scroll-snap-align: start;
-  min-width: 232px;
-  max-width: 300px;
-  background: linear-gradient(150deg, #142a50 0%, #0a1628 55%);
-  border: 1px solid #2a4a7a;
-  border-radius: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  text-align: left;
-  font: inherit;
+  position: relative;
+  min-width: 248px;
+  max-width: 310px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(42, 74, 122, 0.95);
+  border-left: 4px solid #c9a84c;
+  background: linear-gradient(165deg, #162d52 0%, #0c182c 50%, #0a1424 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.22s, box-shadow 0.22s, transform 0.18s;
+}
+.ticket-pass:hover {
+  border-color: rgba(201, 168, 76, 0.55);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(201, 168, 76, 0.12), 0 0 24px rgba(201, 168, 76, 0.08);
+  transform: translateY(-3px);
+}
+.ticket-pass-perf {
+  height: 5px;
+  margin: 10px 12px 0;
+  border-radius: 2px;
+  opacity: 0.45;
+  background: repeating-linear-gradient(90deg, #2a4566 0 5px, transparent 5px 10px);
+}
+.ticket-pass-main {
+  display: block;
+  width: 100%;
+  padding: 10px 14px 40px;
+  margin: 0;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
   color: inherit;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
 }
-.ticket-strip-card:hover {
-  border-color: #c9a84c;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(201, 168, 76, 0.12);
-}
-.ticket-strip-card:focus-visible {
-  outline: 2px solid #c9a84c;
-  outline-offset: 2px;
+.ticket-pass-main:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(201, 168, 76, 0.5);
 }
 .ticket-strip-meta {
   display: flex;
@@ -112,24 +130,25 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .ticket-strip-date {
   font-weight: 700;
-  color: #e8f0ff;
+  color: #f2f6ff;
   letter-spacing: 0.02em;
 }
-.ticket-strip-icon { font-size: 20px; line-height: 1; }
+.ticket-strip-icon { font-size: 18px; line-height: 1; filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.35)); }
 .ticket-strip-teams {
   font-size: 14px;
   font-weight: 700;
-  color: #f0f4fc;
-  line-height: 1.35;
+  color: #fafcff;
+  line-height: 1.45;
+  margin-top: 6px;
 }
 .ticket-strip-teams .vs {
   display: block;
-  margin-top: 2px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #6a88b0;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7a93b8;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
 }
 .ticket-strip-foot {
   display: flex;
@@ -137,8 +156,47 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   align-items: center;
   gap: 6px 10px;
   font-size: 10px;
-  color: #6a88b0;
+  color: #7a93b8;
+  margin-top: 8px;
 }
+.ticket-qty-wrap {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: rgba(10, 22, 40, 0.92);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.ticket-qty-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #1a3358;
+  color: #c9a84c;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ticket-qty-btn:hover { background: #243d68; color: #f0d070; }
+.ticket-qty-val {
+  min-width: 22px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #e8f0ff;
+}
+.standings-table .st-flag { font-size: 14px; margin-right: 4px; opacity: 0.9; }
 #matchTable tbody tr.row-flash { animation: rowFlash 1s ease-out 1; }
 @keyframes rowFlash {
   0% { filter: brightness(1); }
@@ -177,7 +235,10 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .td-ticket { text-align: center; }
 .td-ticket input { width: 18px; height: 18px; cursor: pointer; accent-color: #c9a84c; vertical-align: middle; }
 .match-num { color: #6a88b0; font-weight: 600; font-size: 12px; }
-.team-cell { font-weight: 600; color: #e8f0ff; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.team-cell { font-weight: 600; color: #e8f0ff; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+.team-cell .team-flag { font-size: 15px; margin-right: 5px; opacity: 0.92; vertical-align: -2px; line-height: 1; }
+.time-et-cell { white-space: nowrap; }
+.time-et-cell .et-suffix { font-size: 10px; font-weight: 600; color: #6a88b0; margin-left: 3px; letter-spacing: 0.03em; }
 .vs-cell { color: #4a6080; font-size: 11px; text-align: center; }
 
 /* BADGES */
@@ -233,8 +294,9 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .group-match-row { display: flex; align-items: center; padding: 7px 18px; border-bottom: 1px solid #0f1e38; font-size: 12px; gap: 8px; }
 .group-match-row:last-child { border-bottom: none; }
 .gm-date { color: #6a88b0; min-width: 70px; }
-.gm-team { flex: 1; font-weight: 600; }
-.gm-team.right { text-align: right; }
+.gm-team { flex: 1; font-weight: 600; display: flex; align-items: center; gap: 4px; min-width: 0; }
+.gm-team .team-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; }
+.gm-team.right { text-align: right; justify-content: flex-end; }
 .gm-score { display: flex; align-items: center; gap: 3px; min-width: 80px; justify-content: center; }
 .gm-score-inp { width: 32px; background: #0a1628; border: 1px solid #1e3a6e; border-radius: 5px; color: #c9a84c; padding: 3px 5px; font-size: 12px; font-weight: 700; text-align: center; outline: none; }
 .gm-score-inp:focus { border-color: #c9a84c; }
@@ -254,7 +316,9 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .bmatch-num { font-size: 9px; color: #4a6080; padding: 5px 10px 2px; }
 .bteam { display: flex; align-items: center; padding: 7px 10px; border-bottom: 1px solid #0f1e38; gap: 8px; min-height: 36px; }
 .bteam:last-of-type { border-bottom: none; }
-.bteam-name { flex: 1; font-size: 12px; font-weight: 600; color: #d0dcee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bteam-name { flex: 1; font-size: 12px; font-weight: 600; color: #d0dcee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; display: flex; align-items: center; gap: 5px; }
+.bteam-name .bracket-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; line-height: 1; }
+.bteam-name .bteam-name-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bteam-name.tbd { color: #4a6080; font-style: italic; font-weight: 400; }
 .bteam-name.winner { color: #c9a84c; }
 .bscore { flex-shrink: 0; width: 36px; background: #0a1628; border: 1px solid #2a5a9e; border-radius: 5px; color: #c9a84c; padding: 4px 4px; font-size: 13px; font-weight: 800; text-align: center; outline: none; }
@@ -310,6 +374,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   /* Stats bar */
   .stats-bar { padding: 10px 14px; gap: 8px; }
   .my-tickets-section { padding: 14px; }
+  .ticket-pass { min-width: 210px; max-width: 100%; }
   .stat-card { min-width: 80px; padding: 6px 12px; flex: 1; }
   .stat-card .sn { font-size: 18px; }
   .stat-card .sl { font-size: 9px; }
@@ -372,7 +437,8 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <div style="font-size:44px">🏆</div>
   <div>
     <h1>FIFA World Cup 2026</h1>
-    <p>Match schedule (ET) from the post–draw FIFA World Cup 2026 pairings — verify kickoffs at <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/matches" style="color:#8fa3c4" target="_blank" rel="noopener">fifa.com</a> before travel.</p>
+    <p>Match schedule from the post–draw pairings — verify kickoffs at <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/matches" style="color:#8fa3c4" target="_blank" rel="noopener">fifa.com</a> before travel.</p>
+    <p class="header-et-note">Match times shown in <strong>Eastern Time (ET)</strong> (US Eastern, including EST/EDT by date). Verify against fifa.com before travel.</p>
   </div>
 </div>
 
@@ -390,7 +456,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <section class="my-tickets-section" aria-labelledby="myTicketsHeading">
     <div class="my-tickets-head">
       <h2 id="myTicketsHeading">🎫 My tickets</h2>
-      <span class="my-tickets-sub">Matches you marked below — click a card to jump to that row in the schedule (filters clear so it is visible).</span>
+      <span class="my-tickets-sub">Matches you marked below (kickoffs in ET). Click the card body to jump to that row — filters clear so it is visible. Use +/− for how many tickets you hold.</span>
     </div>
     <div id="myTicketsStrip" class="my-tickets-strip"></div>
   </section>
@@ -474,7 +540,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 <script src="config.js"></script>
 <script>
 // ============================================================
-//  DATA
+//  DATA — kickoffs are U.S. Eastern Time (ET). Curated; verify at fifa.com (see scripts/SCHEDULE_VERIFICATION.md).
 // ============================================================
 const ALL_MATCHES = [
 {id:1,date:"2026-06-11",day:"Thu",time:"3:00 PM",stage:"Group Stage",group:"A",t1:"Mexico",t2:"South Africa",venue:"Estadio Azteca",city:"Mexico City",country:"Mexico"},
@@ -482,7 +548,7 @@ const ALL_MATCHES = [
   {id:3,date:"2026-06-12",day:"Fri",time:"3:00 PM",stage:"Group Stage",group:"B",t1:"Canada",t2:"Bosnia & Herzegovina",venue:"BMO Field",city:"Toronto",country:"Canada"},
   {id:4,date:"2026-06-12",day:"Fri",time:"9:00 PM",stage:"Group Stage",group:"D",t1:"USA",t2:"Paraguay",venue:"SoFi Stadium",city:"Inglewood",country:"USA"},
   {id:5,date:"2026-06-13",day:"Sat",time:"9:00 PM",stage:"Group Stage",group:"C",t1:"Haiti",t2:"Scotland",venue:"Gillette Stadium",city:"Foxborough",country:"USA"},
-  {id:6,date:"2026-06-13",day:"Sat",time:"12:00 AM",stage:"Group Stage",group:"D",t1:"Australia",t2:"Turkiye",venue:"BC Place",city:"Vancouver",country:"Canada"},
+  {id:6,date:"2026-06-13",day:"Sat",time:"9:30 PM",stage:"Group Stage",group:"D",t1:"Australia",t2:"Turkiye",venue:"BC Place",city:"Vancouver",country:"Canada"},
   {id:7,date:"2026-06-13",day:"Sat",time:"6:00 PM",stage:"Group Stage",group:"C",t1:"Brazil",t2:"Morocco",venue:"MetLife Stadium",city:"East Rutherford",country:"USA"},
   {id:8,date:"2026-06-13",day:"Sat",time:"3:00 PM",stage:"Group Stage",group:"B",t1:"Qatar",t2:"Switzerland",venue:"Levi's Stadium",city:"Santa Clara",country:"USA"},
   {id:9,date:"2026-06-14",day:"Sun",time:"7:00 PM",stage:"Group Stage",group:"E",t1:"Ivory Coast",t2:"Ecuador",venue:"Lincoln Financial Field",city:"Philadelphia",country:"USA"},
@@ -496,7 +562,7 @@ const ALL_MATCHES = [
   {id:17,date:"2026-06-16",day:"Tue",time:"3:00 PM",stage:"Group Stage",group:"I",t1:"France",t2:"Senegal",venue:"MetLife Stadium",city:"East Rutherford",country:"USA"},
   {id:18,date:"2026-06-16",day:"Tue",time:"6:00 PM",stage:"Group Stage",group:"I",t1:"Iraq",t2:"Norway",venue:"Gillette Stadium",city:"Foxborough",country:"USA"},
   {id:19,date:"2026-06-16",day:"Tue",time:"9:00 PM",stage:"Group Stage",group:"J",t1:"Argentina",t2:"Algeria",venue:"Arrowhead Stadium",city:"Kansas City",country:"USA"},
-  {id:20,date:"2026-06-16",day:"Tue",time:"12:00 AM",stage:"Group Stage",group:"J",t1:"Austria",t2:"Jordan",venue:"Levi's Stadium",city:"Santa Clara",country:"USA"},
+  {id:20,date:"2026-06-16",day:"Tue",time:"10:00 PM",stage:"Group Stage",group:"J",t1:"Austria",t2:"Jordan",venue:"Levi's Stadium",city:"Santa Clara",country:"USA"},
   {id:21,date:"2026-06-17",day:"Wed",time:"7:00 PM",stage:"Group Stage",group:"L",t1:"Ghana",t2:"Panama",venue:"BMO Field",city:"Toronto",country:"Canada"},
   {id:22,date:"2026-06-17",day:"Wed",time:"4:00 PM",stage:"Group Stage",group:"L",t1:"England",t2:"Croatia",venue:"AT&T Stadium",city:"Arlington",country:"USA"},
   {id:23,date:"2026-06-17",day:"Wed",time:"1:00 PM",stage:"Group Stage",group:"K",t1:"Portugal",t2:"DR Congo",venue:"NRG Stadium",city:"Houston",country:"USA"},
@@ -512,7 +578,7 @@ const ALL_MATCHES = [
   {id:33,date:"2026-06-20",day:"Sat",time:"4:00 PM",stage:"Group Stage",group:"E",t1:"Germany",t2:"Ivory Coast",venue:"BMO Field",city:"Toronto",country:"Canada"},
   {id:34,date:"2026-06-20",day:"Sat",time:"8:00 PM",stage:"Group Stage",group:"E",t1:"Ecuador",t2:"Curacao",venue:"Arrowhead Stadium",city:"Kansas City",country:"USA"},
   {id:35,date:"2026-06-20",day:"Sat",time:"1:00 PM",stage:"Group Stage",group:"F",t1:"Netherlands",t2:"Sweden",venue:"NRG Stadium",city:"Houston",country:"USA"},
-  {id:36,date:"2026-06-20",day:"Sat",time:"12:00 AM",stage:"Group Stage",group:"F",t1:"Tunisia",t2:"Japan",venue:"Estadio BBVA",city:"Monterrey",country:"Mexico"},
+  {id:36,date:"2026-06-20",day:"Sat",time:"9:00 PM",stage:"Group Stage",group:"F",t1:"Tunisia",t2:"Japan",venue:"Estadio BBVA",city:"Monterrey",country:"Mexico"},
   {id:37,date:"2026-06-21",day:"Sun",time:"6:00 PM",stage:"Group Stage",group:"H",t1:"Uruguay",t2:"Cape Verde",venue:"Hard Rock Stadium",city:"Miami Gardens",country:"USA"},
   {id:38,date:"2026-06-21",day:"Sun",time:"12:00 PM",stage:"Group Stage",group:"H",t1:"Spain",t2:"Saudi Arabia",venue:"Mercedes-Benz Stadium",city:"Atlanta",country:"USA"},
   {id:39,date:"2026-06-21",day:"Sun",time:"3:00 PM",stage:"Group Stage",group:"G",t1:"Belgium",t2:"Iran",venue:"SoFi Stadium",city:"Inglewood",country:"USA"},
@@ -584,23 +650,84 @@ const ALL_MATCHES = [
 
 ];
 
-const GROUP_TEAMS = {
-  A:['Mexico','South Africa','South Korea','Czechia'],
-  B:['Canada','Switzerland','Qatar','Bosnia & Herzegovina'],
-  C:['Brazil','Morocco','Haiti','Scotland'],
-  D:['USA','Paraguay','Australia','Turkiye'],
-  E:['Germany','Curacao','Ivory Coast','Ecuador'],
-  F:['Netherlands','Japan','Tunisia','Sweden'],
-  G:['Belgium','Egypt','Iran','New Zealand'],
-  H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],
-  I:['France','Senegal','Norway','Iraq'],
-  J:['Argentina','Algeria','Austria','Jordan'],
-  K:['Portugal','Uzbekistan','Colombia','DR Congo'],
-  L:['England','Croatia','Ghana','Panama']
+const FLAGS = { USA: '🇺🇸', Mexico: '🇲🇽', Canada: '🇨🇦' };
+const STAGE_ORDER = ['Group Stage', 'Round of 32', 'Round of 16', 'Quarterfinal', 'Semifinal', '3rd Place Match', 'FINAL'];
+
+/** National-team flags for schedule UI (not host country). */
+const TEAM_FLAGS = {
+  Mexico: '🇲🇽', 'South Africa': '🇿🇦', 'South Korea': '🇰🇷', Czechia: '🇨🇿',
+  Canada: '🇨🇦', Switzerland: '🇨🇭', Qatar: '🇶🇦', 'Bosnia & Herzegovina': '🇧🇦',
+  Brazil: '🇧🇷', Morocco: '🇲🇦', Haiti: '🇭🇹', Scotland: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  USA: '🇺🇸', Paraguay: '🇵🇾', Australia: '🇦🇺', Turkiye: '🇹🇷',
+  Germany: '🇩🇪', Curacao: '🇨🇼', 'Ivory Coast': '🇨🇮', Ecuador: '🇪🇨',
+  Netherlands: '🇳🇱', Japan: '🇯🇵', Tunisia: '🇹🇳', Sweden: '🇸🇪',
+  Belgium: '🇧🇪', Egypt: '🇪🇬', Iran: '🇮🇷', 'New Zealand': '🇳🇿',
+  Spain: '🇪🇸', 'Cape Verde': '🇨🇻', 'Saudi Arabia': '🇸🇦', Uruguay: '🇺🇾',
+  France: '🇫🇷', Senegal: '🇸🇳', Norway: '🇳🇴', Iraq: '🇮🇶',
+  Argentina: '🇦🇷', Algeria: '🇩🇿', Austria: '🇦🇹', Jordan: '🇯🇴',
+  Portugal: '🇵🇹', Uzbekistan: '🇺🇿', Colombia: '🇨🇴', 'DR Congo': '🇨🇩',
+  England: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', Croatia: '🇭🇷', Ghana: '🇬🇭', Panama: '🇵🇦',
 };
 
-const FLAGS = {USA:'🇺🇸',Mexico:'🇲🇽',Canada:'🇨🇦'};
-const STAGE_ORDER = ["Group Stage","Round of 32","Round of 16","Quarterfinal","Semifinal","3rd Place Match","FINAL"];
+function teamFlagEmoji(name) {
+  if (!name || typeof name !== 'string') return '🌐';
+  var t = name.trim();
+  if (!t) return '🌐';
+  if (/^(Winner|Runner-up|Loser|Best|TBD)/.test(t)) return '🏆';
+  return TEAM_FLAGS[t] || '🌐';
+}
+
+function enrichMatchRecords() {
+  ALL_MATCHES.forEach(function (m) {
+    m.matchNumber = m.id;
+    m.timeET = m.time;
+    m.team1 = m.t1;
+    m.team2 = m.t2;
+    m.team1Flag = teamFlagEmoji(m.t1);
+    m.team2Flag = teamFlagEmoji(m.t2);
+    m.hostFlag = FLAGS[m.country] || '🌐';
+  });
+}
+
+function validateMatchSchedule(matches) {
+  var iso = /^\d{4}-\d{2}-\d{2}$/;
+  matches.forEach(function (m) {
+    if (!m.t1 || !String(m.t1).trim()) console.warn('[FIFA schedule validation] match', m.id, 'missing team1');
+    if (!m.t2 || !String(m.t2).trim()) console.warn('[FIFA schedule validation] match', m.id, 'missing team2');
+    if (!iso.test(m.date || '')) console.warn('[FIFA schedule validation] match', m.id, 'unusual date', m.date);
+    if (m.time === '12:00 AM') console.warn('[FIFA schedule validation] match', m.id, 'midnight ET — verify on fifa.com', m.t1, 'v', m.t2);
+    if (!TEAM_FLAGS[m.t1] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t1))) console.warn('[FIFA schedule validation] no TEAM_FLAGS entry for', m.t1, '(match ' + m.id + ')');
+    if (!TEAM_FLAGS[m.t2] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t2))) console.warn('[FIFA schedule validation] no TEAM_FLAGS entry for', m.t2, '(match ' + m.id + ')');
+  });
+  if (matches.length !== 104) console.warn('[FIFA schedule validation] expected 104 matches, got', matches.length);
+  var hc = { USA: 0, Mexico: 0, Canada: 0 };
+  var other = 0;
+  matches.forEach(function (m) {
+    if (hc[m.country] !== undefined) hc[m.country]++;
+    else other++;
+  });
+  if (other) console.warn('[FIFA schedule validation] host country not USA/MEX/CAN on', other, 'rows');
+  var sum = hc.USA + hc.Mexico + hc.Canada;
+  if (sum !== matches.length) console.warn('[FIFA schedule validation] host counts sum', sum, '≠ match count', matches.length);
+}
+
+enrichMatchRecords();
+validateMatchSchedule(ALL_MATCHES);
+
+const GROUP_TEAMS = {
+  A: ['Mexico', 'South Africa', 'South Korea', 'Czechia'],
+  B: ['Canada', 'Switzerland', 'Qatar', 'Bosnia & Herzegovina'],
+  C: ['Brazil', 'Morocco', 'Haiti', 'Scotland'],
+  D: ['USA', 'Paraguay', 'Australia', 'Turkiye'],
+  E: ['Germany', 'Curacao', 'Ivory Coast', 'Ecuador'],
+  F: ['Netherlands', 'Japan', 'Tunisia', 'Sweden'],
+  G: ['Belgium', 'Egypt', 'Iran', 'New Zealand'],
+  H: ['Spain', 'Cape Verde', 'Saudi Arabia', 'Uruguay'],
+  I: ['France', 'Senegal', 'Norway', 'Iraq'],
+  J: ['Argentina', 'Algeria', 'Austria', 'Jordan'],
+  K: ['Portugal', 'Uzbekistan', 'Colombia', 'DR Congo'],
+  L: ['England', 'Croatia', 'Ghana', 'Panama'],
+};
 
 // ============================================================
 //  STATE — one shared board (localStorage + optional Supabase row id "global")
@@ -610,6 +737,7 @@ const CLOUD_ROW_ID = 'global';
 let SCORES = {};   // { matchId: { t1: number|null, t2: number|null } }
 let COMMENTS = {}; // { matchId: string }
 let BOUGHT = {};   // { matchId: true } — ticket highlight
+let TICKET_COUNTS = {}; // { matchId: positive int } — seats / passes per match (when BOUGHT)
 let lastRemoteUpdated = null;
 let applyingRemote = false;
 let pushTimer = null;
@@ -625,6 +753,7 @@ function cloudEnabled() {
 function lsKeyScores() { return 'fifa2026_scores'; }
 function lsKeyComments() { return 'fifa2026_comments'; }
 function lsKeyBought() { return 'fifa2026_bought'; }
+function lsKeyTicketCounts() { return 'fifa2026_ticket_counts'; }
 
 function stripLegacyRoomFromUrl() {
   try {
@@ -641,6 +770,7 @@ function loadLocal() {
     let s = localStorage.getItem(lsKeyScores());
     let c = localStorage.getItem(lsKeyComments());
     let b = localStorage.getItem(lsKeyBought());
+    let tc = localStorage.getItem(lsKeyTicketCounts());
     if (!s) {
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -671,6 +801,15 @@ function loadLocal() {
     if (s) SCORES = JSON.parse(s);
     if (c) COMMENTS = JSON.parse(c);
     if (b) BOUGHT = JSON.parse(b);
+    if (tc) {
+      TICKET_COUNTS = JSON.parse(tc);
+      Object.keys(TICKET_COUNTS).forEach(function (k) {
+        var n = parseInt(TICKET_COUNTS[k], 10);
+        if (!Number.isFinite(n) || n < 1) delete TICKET_COUNTS[k];
+        else if (n > 99) TICKET_COUNTS[k] = 99;
+        else TICKET_COUNTS[k] = n;
+      });
+    }
   } catch (e) {}
 }
 
@@ -679,6 +818,7 @@ function persistLocal() {
     localStorage.setItem(lsKeyScores(), JSON.stringify(SCORES));
     localStorage.setItem(lsKeyComments(), JSON.stringify(COMMENTS));
     localStorage.setItem(lsKeyBought(), JSON.stringify(BOUGHT));
+    localStorage.setItem(lsKeyTicketCounts(), JSON.stringify(TICKET_COUNTS));
   } catch (e) {}
 }
 
@@ -687,7 +827,7 @@ function stripLegacyFifaKeys() {
   try {
     for (var i = localStorage.length - 1; i >= 0; i--) {
       var k = localStorage.key(i);
-      if (k && /^fifa2026_(scores|comments|bought)_/.test(k)) localStorage.removeItem(k);
+      if (k && /^fifa2026_(scores|comments|bought|ticket_counts)_/.test(k)) localStorage.removeItem(k);
     }
   } catch (e) {}
 }
@@ -703,7 +843,7 @@ function sbHeaders(extra) {
 
 async function fetchRoomRow() {
   const base = String(SB_CFG.url || '').replace(/\/$/, '');
-  const url = base + '/rest/v1/fifa_rooms?id=eq.' + encodeURIComponent(CLOUD_ROW_ID) + '&select=id,scores,comments,bought,updated_at';
+  const url = base + '/rest/v1/fifa_rooms?id=eq.' + encodeURIComponent(CLOUD_ROW_ID) + '&select=id,scores,comments,bought,ticket_counts,updated_at';
   const r = await fetch(url, { headers: sbHeaders() });
   if (!r.ok) throw new Error(await r.text());
   const arr = await r.json();
@@ -722,6 +862,7 @@ async function pushCloudSilent() {
       scores: SCORES,
       comments: COMMENTS,
       bought: BOUGHT,
+      ticket_counts: TICKET_COUNTS,
       updated_at: new Date().toISOString(),
     }]),
   });
@@ -750,6 +891,7 @@ function applyRemotePayload(row) {
   SCORES = row.scores && typeof row.scores === 'object' ? row.scores : {};
   COMMENTS = row.comments && typeof row.comments === 'object' ? row.comments : {};
   BOUGHT = row.bought && typeof row.bought === 'object' ? row.bought : {};
+  TICKET_COUNTS = row.ticket_counts && typeof row.ticket_counts === 'object' ? row.ticket_counts : {};
   persistLocal();
   renderSchedule();
   refreshGroupsTab();
@@ -771,7 +913,7 @@ function updateSyncBanner() {
   }
   el.style.display = 'flex';
   const status = cloudUiState === 'error'
-    ? '<span style="color:#ff9090">Cloud error — check Supabase URL/key and run <code>database/supabase.sql</code> plus <code>database/migration_add_bought.sql</code> if upgrading.</span>'
+    ? '<span style="color:#ff9090">Cloud error — check Supabase URL/key and run <code>database/supabase.sql</code> plus migrations <code>migration_add_bought.sql</code> / <code>migration_add_ticket_counts.sql</code> if upgrading.</span>'
     : cloudUiState === 'syncing'
     ? '<span>Syncing…</span>'
     : '<span style="color:#6ed49a">Cloud on</span>';
@@ -793,10 +935,12 @@ async function initCloudSync() {
     const remoteHas = row && (
       (row.scores && Object.keys(row.scores).length) ||
       (row.comments && Object.keys(row.comments).some(function (k) { return row.comments[k]; })) ||
-      (row.bought && Object.keys(row.bought).some(function (k) { return row.bought[k]; }))
+      (row.bought && Object.keys(row.bought).some(function (k) { return row.bought[k]; })) ||
+      (row.ticket_counts && Object.keys(row.ticket_counts).some(function (k) { return row.ticket_counts[k] > 0; }))
     );
     const localHas = Object.keys(SCORES).length > 0 || Object.keys(COMMENTS).some(function (k) { return COMMENTS[k]; }) ||
-      Object.keys(BOUGHT).some(function (k) { return BOUGHT[k]; });
+      Object.keys(BOUGHT).some(function (k) { return BOUGHT[k]; }) ||
+      Object.keys(TICKET_COUNTS).some(function (k) { return TICKET_COUNTS[k] > 0; });
     if (remoteHas) {
       applyRemotePayload(row);
     } else if (localHas) {
@@ -841,9 +985,37 @@ function setComment(id, val) {
   saveState();
 }
 
+function getTicketCount(id) {
+  if (!BOUGHT[id]) return 0;
+  var n = parseInt(TICKET_COUNTS[id], 10);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(99, n);
+}
+
+function setTicketCount(id, value) {
+  if (!BOUGHT[id]) return;
+  var n = parseInt(value, 10);
+  if (!Number.isFinite(n) || n < 1) n = 1;
+  if (n > 99) n = 99;
+  TICKET_COUNTS[id] = n;
+  persistLocal();
+  scheduleCloudPush();
+  renderSchedule();
+}
+
+function adjustTicketCount(id, delta) {
+  if (!BOUGHT[id]) return;
+  setTicketCount(id, getTicketCount(id) + delta);
+}
+
 function setBought(id, checked) {
-  if (checked) BOUGHT[id] = true;
-  else delete BOUGHT[id];
+  if (checked) {
+    BOUGHT[id] = true;
+    if (!TICKET_COUNTS[id] || parseInt(TICKET_COUNTS[id], 10) < 1) TICKET_COUNTS[id] = 1;
+  } else {
+    delete BOUGHT[id];
+    delete TICKET_COUNTS[id];
+  }
   persistLocal();
   scheduleCloudPush();
   renderSchedule();
@@ -931,6 +1103,7 @@ function resetFilters(ev) {
   SCORES = {};
   COMMENTS = {};
   BOUGHT = {};
+  TICKET_COUNTS = {};
   stripLegacyFifaKeys();
   persistLocal();
 
@@ -992,20 +1165,35 @@ function renderMyTicketsStrip() {
     return;
   }
   el.innerHTML = list.map(function (m) {
-    var flag = FLAGS[m.country] || '🌎';
-    return '<button type="button" class="ticket-strip-card" onclick="scrollToMatchRow(' + m.id + ')" aria-label="Jump to match ' + m.id + '">' +
-      '<div class="ticket-strip-meta">' +
-        '<span class="ticket-strip-date">' + escHtml(m.date) + (m.day ? ' · ' + escHtml(m.day) : '') + '</span>' +
-        '<span class="ticket-strip-icon" aria-hidden="true">🎫</span>' +
+    var hostF = FLAGS[m.country] || '🌎';
+    var f1 = teamFlagEmoji(m.t1);
+    var f2 = teamFlagEmoji(m.t2);
+    var qty = getTicketCount(m.id);
+    return '<div class="ticket-pass" data-mid="' + m.id + '">' +
+      '<div class="ticket-pass-perf" aria-hidden="true"></div>' +
+      '<button type="button" class="ticket-pass-main" onclick="scrollToMatchRow(' + m.id + ')" aria-label="Jump to match ' + m.id + '">' +
+        '<div class="ticket-strip-meta">' +
+          '<span class="ticket-strip-date">' + escHtml(m.date) + (m.day ? ' · ' + escHtml(m.day) : '') + '</span>' +
+          '<span class="ticket-strip-icon" aria-hidden="true">🎫</span>' +
+        '</div>' +
+        '<div class="ticket-strip-teams">' +
+          '<span><span class="team-flag" aria-hidden="true">' + escHtml(f1) + '</span>' + escHtml(m.t1) + '</span>' +
+          '<span class="vs"> vs </span>' +
+          '<span><span class="team-flag" aria-hidden="true">' + escHtml(f2) + '</span>' + escHtml(m.t2) + '</span>' +
+        '</div>' +
+        '<div class="ticket-strip-foot">' +
+          '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
+          '<span>' + escHtml(m.timeET || m.time || '') + ' ET' + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
+          '<span>' + hostF + ' ' + escHtml(m.country) + '</span>' +
+          '<span>#' + m.id + '</span>' +
+        '</div>' +
+      '</button>' +
+      '<div class="ticket-qty-wrap" role="group" aria-label="Tickets for this match" onclick="event.stopPropagation()">' +
+        '<button type="button" class="ticket-qty-btn" aria-label="Decrease ticket count" onclick="adjustTicketCount(' + m.id + ',-1)">−</button>' +
+        '<span class="ticket-qty-val" title="Tickets held">×' + qty + '</span>' +
+        '<button type="button" class="ticket-qty-btn" aria-label="Increase ticket count" onclick="adjustTicketCount(' + m.id + ',1)">+</button>' +
       '</div>' +
-      '<div class="ticket-strip-teams">' + escHtml(m.t1) + '<span class="vs"> vs </span>' + escHtml(m.t2) + '</div>' +
-      '<div class="ticket-strip-foot">' +
-        '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
-        '<span>' + escHtml(m.time || '') + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
-        '<span>' + flag + ' ' + escHtml(m.country) + '</span>' +
-        '<span>#' + m.id + '</span>' +
-      '</div>' +
-    '</button>';
+    '</div>';
   }).join('');
 }
 
@@ -1037,7 +1225,7 @@ function renderSchedule() {
   });
   const tbody=document.getElementById('tableBody');
   const noR=document.getElementById('noResults');
-  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches`;
+  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches <span style="color:#4a6080;font-weight:500">· times Eastern (ET)</span>`;
   if(!data.length){
     tbody.innerHTML='';
     noR.style.display='block';
@@ -1059,10 +1247,10 @@ function renderSchedule() {
       <td class="td-ticket"><input type="checkbox" class="ticket-cb" id="ticket-${m.id}" name="ticket_${m.id}" aria-label="I have a ticket for this match"${tick} onchange="setBought(${m.id},this.checked)"></td>
       <td>${m.date}</td>
       <td class="hide-sm">${m.day}</td>
-      <td class="hide-sm">${m.time}</td>
+      <td class="hide-sm time-et-cell">${m.timeET || m.time}<span class="et-suffix">ET</span></td>
       <td><span class="badge ${badgeClass(m.stage)}">${m.stage}</span></td>
       <td>${grpCell}</td>
-      <td class="team-cell">${m.t1}</td>
+      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team1Flag || teamFlagEmoji(m.t1)}</span>${escHtml(m.t1)}</td>
       <td>
         <div class="score-wrap">
           <input class="score-inp" type="number" min="0" max="99" value="${s.t1??''}" placeholder="—"
@@ -1074,7 +1262,7 @@ function renderSchedule() {
             onchange="setScore(${m.id},'t2',this.value)" oninput="setScore(${m.id},'t2',this.value)">
         </div>
       </td>
-      <td class="team-cell">${m.t2}</td>
+      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team2Flag || teamFlagEmoji(m.t2)}</span>${escHtml(m.t2)}</td>
       <td class="hide-sm" style="color:#8fa3c4;font-size:12px">${m.venue}</td>
       <td class="hide-sm">${m.city}</td>
       <td>${FLAGS[m.country]||'🌎'} ${m.country}</td>
@@ -1095,10 +1283,13 @@ function updateStatsBar() {
   const can=filtered.filter(m=>m.country==='Canada').length;
   const venues=new Set(filtered.map(m=>m.venue)).size;
   const played=filtered.filter(m=>SCORES[m.id]&&SCORES[m.id].t1!=null&&SCORES[m.id].t2!=null).length;
-  const savedTickets = Object.keys(BOUGHT).filter(function (k) { return BOUGHT[k]; }).length;
+  const savedMatchCount = Object.keys(BOUGHT).filter(function (k) { return BOUGHT[k]; }).length;
+  const ticketQtyTotal = Object.keys(BOUGHT).filter(function (k) { return BOUGHT[k]; }).reduce(function (sum, k) {
+    return sum + getTicketCount(parseInt(k, 10));
+  }, 0);
   document.getElementById('statsBar').innerHTML=`
     <div class="stat-card"><div class="sn">${filtered.length}</div><div class="sl">Matches</div></div>
-    <div class="stat-card"><div class="sn">🎫 ${savedTickets}</div><div class="sl">Tickets saved</div></div>
+    <div class="stat-card"><div class="sn" style="font-size:17px">${savedMatchCount}<span style="color:#5a7399;font-weight:600"> / </span>${ticketQtyTotal}</div><div class="sl">Tickets (matches / qty)</div></div>
     <div class="stat-card"><div class="sn">🇺🇸 ${usa}</div><div class="sl">USA Games</div></div>
     <div class="stat-card"><div class="sn">🇲🇽 ${mex}</div><div class="sl">Mexico Games</div></div>
     <div class="stat-card"><div class="sn">🇨🇦 ${can}</div><div class="sl">Canada Games</div></div>
@@ -1182,7 +1373,7 @@ function buildGroupCard(g) {
     const cls = i<2 ? 'qualifier' : (i===2 ? 'third-place' : '');
     const gdStr = s.gd>0?`<span class="gd-pos">+${s.gd}</span>`:s.gd<0?`<span class="gd-neg">${s.gd}</span>`:`<span>0</span>`;
     return `<tr class="${cls}">
-      <td>${s.team}</td>
+      <td><span class="team-flag st-flag" aria-hidden="true">${teamFlagEmoji(s.team)}</span>${s.team}</td>
       <td>${s.mp}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td>
       <td>${s.gf}</td><td>${s.ga}</td><td>${gdStr}</td>
       <td class="pts-cell">${s.pts}</td>
@@ -1193,7 +1384,7 @@ function buildGroupCard(g) {
     const sc=SCORES[m.id]||{t1:'',t2:''};
     return `<div class="group-match-row">
       <span class="gm-date">${m.date.slice(5)}</span>
-      <span class="gm-team">${m.t1}</span>
+      <span class="gm-team"><span class="team-flag" aria-hidden="true">${teamFlagEmoji(m.t1)}</span>${m.t1}</span>
       <div class="gm-score">
         <input class="gm-score-inp" type="number" min="0" max="99"
           data-id="${m.id}" data-side="t1" value="${sc.t1??''}" placeholder="—">
@@ -1201,7 +1392,7 @@ function buildGroupCard(g) {
         <input class="gm-score-inp" type="number" min="0" max="99"
           data-id="${m.id}" data-side="t2" value="${sc.t2??''}" placeholder="—">
       </div>
-      <span class="gm-team right">${m.t2}</span>
+      <span class="gm-team right"><span class="team-flag" aria-hidden="true">${teamFlagEmoji(m.t2)}</span>${m.t2}</span>
     </div>`;
   }).join('');
 
@@ -1295,17 +1486,18 @@ function buildBracketMatch(mid) {
   const t2tbd = t2resolved === null;
 
   const fmt = name => name.length > 19 ? name.slice(0, 18) + '…' : name;
+  const line = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + escHtml(teamFlagEmoji(nm)) + '</span><span class="bteam-name-text">' + escHtml(fmt(nm)) + '</span>';
 
   return `<div class="bmatch">
-    <div class="bmatch-num">M${mid} · ${m.date.slice(5)} · ${m.city}</div>
+    <div class="bmatch-num">M${mid} · ${m.date.slice(5)} · ${m.timeET || m.time} ET · ${m.city}</div>
     <div class="bteam">
-      <span class="bteam-name ${t1win ? 'winner' : ''} ${t1tbd ? 'tbd' : ''}" title="${m.t1}">${fmt(t1name)}</span>
+      <span class="bteam-name ${t1win ? 'winner' : ''} ${t1tbd ? 'tbd' : ''}" title="${escHtml(m.t1)}">${line(t1name)}</span>
       <input class="bscore" type="number" min="0" max="99" value="${sc.t1 ?? ''}" placeholder="—"
         onchange="setScore(${mid},'t1',this.value);refreshBracket()"
         oninput="setScore(${mid},'t1',this.value);refreshBracket()">
     </div>
     <div class="bteam">
-      <span class="bteam-name ${t2win ? 'winner' : ''} ${t2tbd ? 'tbd' : ''}" title="${m.t2}">${fmt(t2name)}</span>
+      <span class="bteam-name ${t2win ? 'winner' : ''} ${t2tbd ? 'tbd' : ''}" title="${escHtml(m.t2)}">${line(t2name)}</span>
       <input class="bscore" type="number" min="0" max="99" value="${sc.t2 ?? ''}" placeholder="—"
         onchange="setScore(${mid},'t2',this.value);refreshBracket()"
         oninput="setScore(${mid},'t2',this.value);refreshBracket()">
@@ -1444,13 +1636,14 @@ function buildFinalTeams(mid) {
   const t2name = t2resolved || m.t2;
   const t1win = sc.t1 != null && sc.t2 != null && sc.t1 > sc.t2;
   const t2win = sc.t1 != null && sc.t2 != null && sc.t2 > sc.t1;
+  const finLine = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + escHtml(teamFlagEmoji(nm)) + '</span><span class="bteam-name-text">' + escHtml(nm) + '</span>';
   return `<div class="bteam">
-    <span class="bteam-name ${t1win ? 'winner' : ''} ${t1resolved === null ? 'tbd' : ''}" title="${m.t1}">${t1name}</span>
+    <span class="bteam-name ${t1win ? 'winner' : ''} ${t1resolved === null ? 'tbd' : ''}" title="${escHtml(m.t1)}">${finLine(t1name)}</span>
     <input class="bscore" type="number" min="0" value="${sc.t1 ?? ''}" placeholder="—"
       onchange="setScore(${mid},'t1',this.value);refreshBracket()" oninput="setScore(${mid},'t1',this.value);refreshBracket()">
   </div>
   <div class="bteam">
-    <span class="bteam-name ${t2win ? 'winner' : ''} ${t2resolved === null ? 'tbd' : ''}" title="${m.t2}">${t2name}</span>
+    <span class="bteam-name ${t2win ? 'winner' : ''} ${t2resolved === null ? 'tbd' : ''}" title="${escHtml(m.t2)}">${finLine(t2name)}</span>
     <input class="bscore" type="number" min="0" value="${sc.t2 ?? ''}" placeholder="—"
       onchange="setScore(${mid},'t2',this.value);refreshBracket()" oninput="setScore(${mid},'t2',this.value);refreshBracket()">
   </div>`;
@@ -1478,15 +1671,17 @@ function buildFinalTeams(mid) {
 
   // Same browser, other tab/window changed localStorage → refresh this tab
   window.addEventListener('storage', function (e) {
-    if (e.key !== lsKeyScores() && e.key !== lsKeyComments() && e.key !== lsKeyBought()) return;
+    if (e.key !== lsKeyScores() && e.key !== lsKeyComments() && e.key !== lsKeyBought() && e.key !== lsKeyTicketCounts()) return;
     try {
       applyingRemote = true;
       var s = localStorage.getItem(lsKeyScores());
       var c = localStorage.getItem(lsKeyComments());
       var b = localStorage.getItem(lsKeyBought());
+      var tc = localStorage.getItem(lsKeyTicketCounts());
       SCORES = s ? JSON.parse(s) : {};
       COMMENTS = c ? JSON.parse(c) : {};
       BOUGHT = b ? JSON.parse(b) : {};
+      TICKET_COUNTS = tc ? JSON.parse(tc) : {};
       renderSchedule();
       refreshGroupsTab();
       refreshBracket();

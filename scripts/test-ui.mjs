@@ -34,7 +34,7 @@ await page.waitForTimeout(200);
 const cls = await firstRow.getAttribute('class');
 assert(cls && cls.includes('row-ticket'), 'expected tr.row-ticket after checking ticket, class=' + cls);
 
-const stripCount = await page.locator('.ticket-strip-card').count();
+const stripCount = await page.locator('.ticket-pass').count();
 assert(stripCount >= 1, 'expected My tickets strip to list at least one card, got ' + stripCount);
 
 // --- Dismissing reset confirm keeps scores ---
