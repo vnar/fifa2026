@@ -1337,6 +1337,69 @@ function normalizeBought(obj) {
   return out;
 }
 
+/** Optional URL for JSON snapshot (see public-board.json). Same-origin default on http(s). */
+function inferPublicBoardJsonUrl() {
+  try {
+    var cfg = window.__FIFA_SUPABASE__ || {};
+    var o = String(cfg.publicBoardUrl || '').trim();
+    if (o.length > 4) return o;
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
+    return new URL('public-board.json', location.href).href;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Merge a shared snapshot (scores, comments, bought, ticket_counts). Returns true if anything merged. */
+function mergeSnapshotIntoState(snap) {
+  if (!snap || typeof snap !== 'object') return false;
+  var changed = false;
+  if (snap.scores && typeof snap.scores === 'object' && Object.keys(snap.scores).length) {
+    Object.assign(SCORES, snap.scores);
+    changed = true;
+  }
+  if (snap.comments && typeof snap.comments === 'object' && Object.keys(snap.comments).length) {
+    Object.assign(COMMENTS, snap.comments);
+    changed = true;
+  }
+  if (snap.bought && typeof snap.bought === 'object') {
+    var nb = normalizeBought(snap.bought);
+    if (Object.keys(nb).length) {
+      Object.assign(BOUGHT, nb);
+      changed = true;
+    }
+  }
+  if (snap.ticket_counts && typeof snap.ticket_counts === 'object') {
+    var nt = normalizeTicketCounts(snap.ticket_counts);
+    if (Object.keys(nt).length) {
+      Object.assign(TICKET_COUNTS, nt);
+      Object.keys(nt).forEach(function (k) {
+        if (parseInt(nt[k], 10) > 0) BOUGHT[k] = true;
+      });
+      changed = true;
+    }
+  }
+  if (!changed) return false;
+  Object.keys(BOUGHT).forEach(function (k) {
+    if (!TICKET_COUNTS[k] || parseInt(TICKET_COUNTS[k], 10) < 1) TICKET_COUNTS[k] = 1;
+  });
+  return true;
+}
+
+async function tryMergePublicBoardFromUrl() {
+  var url = inferPublicBoardJsonUrl();
+  if (!url) return;
+  try {
+    var r = await fetch(url, { cache: 'no-store', credentials: 'omit', mode: 'cors' });
+    if (!r.ok) return;
+    var j = await r.json();
+    if (!mergeSnapshotIntoState(j)) return;
+    persistLocal();
+    refreshGroupsTab();
+    refreshBracket();
+  } catch (e) {}
+}
+
 function applyRemotePayload(row) {
   if (!row) return;
   if (row.updated_at && lastRemoteUpdated && row.updated_at === lastRemoteUpdated) return;
@@ -2211,12 +2274,16 @@ function buildFinalTeams(mid) {
 // ============================================================
 //  INIT
 // ============================================================
-(function () {
+(async function () {
   stripLegacyRoomFromUrl();
   loadLocal();
   showStorageContextTips();
   populateScheduleFilters();
   filtered = [...ALL_MATCHES];
+
+  await tryMergePublicBoardFromUrl();
+  await initCloudSync();
+
   renderSchedule();
   buildGroupSelector();
   updateSyncBanner();
@@ -2260,9 +2327,13 @@ function buildFinalTeams(mid) {
     } catch (err) {}
     applyingRemote = false;
   });
-
-  initCloudSync();
-})();
+})().catch(function (err) {
+  console.warn(err);
+  try {
+    renderSchedule();
+    buildGroupSelector();
+  } catch (e2) {}
+});
 </script>
 </body>
 </html>

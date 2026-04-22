@@ -18,6 +18,11 @@ The **database** is **[Supabase](https://supabase.com/)** (hosted Postgres). The
 
 Anyone who loads the deployed site with cloud configured shares the **same** `global` row (updates within a few seconds via polling). Without cloud, each browser keeps its own copy in `localStorage`; two tabs on the same device still sync via the `storage` event.
 
+### Sharing the link (everyone sees the same tickets/scores)
+
+- **Recommended:** Configure **Supabase** (secrets above). Every visitor loads the shared `global` row; tickets and scores sync for everyone who opens your URL.
+- **Without cloud:** The deploy includes **`public-board.json`** (same folder as `index.html`). On each load the app **merges** that file into the page, then saves a copy to the visitor’s `localStorage`. Commit updates to `public-board.json` in the repo (or set optional Actions secret `PUBLIC_BOARD_URL` to any HTTPS JSON URL) so **everyone opening the site** sees the same baseline. Live edits still stay local unless you also use cloud or refresh the JSON.
+
 ### Private / incognito windows
 
 Browsers **isolate** storage for private or incognito mode from your normal windows. Opening the dashboard in incognito will **not** show scores or tickets you saved in a regular window—that is expected browser behavior, not a bug. **Cloud sync** (above) is how you get the same board in private windows and on other devices: the app loads from Supabase after the first fetch.

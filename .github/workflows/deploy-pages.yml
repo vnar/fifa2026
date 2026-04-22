@@ -1,5 +1,6 @@
 # Builds a small site/ folder (index.html + config.js) and publishes to GitHub Pages.
 # One-time: add repository secrets SUPABASE_URL and SUPABASE_ANON_KEY (Settings → Secrets → Actions).
+# Optional: PUBLIC_BOARD_URL — HTTPS URL to a JSON snapshot; otherwise the app loads ./public-board.json from the site.
 # Enable Pages: Settings → Pages → Source = GitHub Actions.
 
 name: Deploy GitHub Pages
@@ -31,15 +32,18 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          PUBLIC_BOARD_URL: ${{ secrets.PUBLIC_BOARD_URL }}
         run: |
           mkdir -p site
           cp index.html site/
+          if [ -f public-board.json ]; then cp public-board.json site/; else printf '%s\n' '{"scores":{},"comments":{},"bought":{},"ticket_counts":{}}' > site/public-board.json; fi
           node <<'NODE'
           const fs = require('fs');
           const url = process.env.SUPABASE_URL || '';
           const key = process.env.SUPABASE_ANON_KEY || '';
+          const pub = process.env.PUBLIC_BOARD_URL || '';
           const esc = (s) => JSON.stringify(s);
-          const body = `window.__FIFA_SUPABASE__ = { url: ${esc(url)}, anonKey: ${esc(key)} };\n`;
+          const body = `window.__FIFA_SUPABASE__ = { url: ${esc(url)}, anonKey: ${esc(key)}, publicBoardUrl: ${esc(pub)} };\n`;
           fs.writeFileSync('site/config.js', body, 'utf8');
           NODE
 
