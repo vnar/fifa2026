@@ -361,6 +361,9 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   flex: 1;
 }
 .ticket-strip-host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
   flex: 1;
   text-align: left;
@@ -499,7 +502,8 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .td-ticket input { width: 18px; height: 18px; cursor: pointer; accent-color: #c9a84c; vertical-align: middle; }
 .match-num { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 .team-cell { font-weight: 600; color: #e8f0ff; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
-.team-cell .team-flag { font-size: 15px; margin-right: 5px; opacity: 0.92; vertical-align: -2px; line-height: 1; }
+.team-cell .team-flag { display: inline-flex; align-items: center; margin-right: 5px; vertical-align: middle; line-height: 1; }
+.team-cell .team-flag .flag-img { margin-right: 0; }
 .time-et-cell { white-space: nowrap; }
 .time-et-cell .et-suffix { font-size: 10px; font-weight: 600; color: var(--text-muted); margin-left: 3px; letter-spacing: 0.03em; }
 .vs-cell { color: var(--text-muted-dim); font-size: 11px; text-align: center; }
@@ -558,7 +562,8 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .group-match-row:last-child { border-bottom: none; }
 .gm-date { color: var(--text-muted); min-width: 70px; }
 .gm-team { flex: 1; font-weight: 600; display: flex; align-items: center; gap: 4px; min-width: 0; }
-.gm-team .team-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; }
+.gm-team .team-flag { display: inline-flex; align-items: center; flex-shrink: 0; }
+.gm-team .team-flag .flag-img { margin-right: 4px; }
 .gm-team.right { text-align: right; justify-content: flex-end; }
 .gm-score { display: flex; align-items: center; gap: 3px; min-width: 80px; justify-content: center; }
 .gm-score-inp { width: 32px; background: #0a1628; border: 1px solid #1e3a6e; border-radius: 5px; color: #c9a84c; padding: 3px 5px; font-size: 12px; font-weight: 700; text-align: center; outline: none; }
@@ -617,7 +622,34 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 .bteam { display: flex; align-items: center; padding: 7px 10px; border-bottom: 1px solid #0f1e38; gap: 8px; min-height: 36px; }
 .bteam:last-of-type { border-bottom: none; }
 .bteam-name { flex: 1; font-size: 12px; font-weight: 600; color: #d0dcee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; display: flex; align-items: center; gap: 5px; }
-.bteam-name .bracket-flag { font-size: 14px; flex-shrink: 0; opacity: 0.9; line-height: 1; }
+.bteam-name .bracket-flag { display: inline-flex; align-items: center; flex-shrink: 0; margin-right: 4px; line-height: 1; }
+.bteam-name .bracket-flag .flag-img { width: 18px; height: 13px; margin-right: 0; }
+/* PNG flags (flagcdn) — consistent across OS/browsers vs emoji */
+.flag-img {
+  width: 22px;
+  height: 16px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 2px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+.flag-img--stat { width: 20px; height: 15px; margin-right: 5px; vertical-align: -3px; }
+.flag-img--ph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #1a2a44;
+  border-radius: 2px;
+  color: #8fa3c4;
+  box-shadow: inset 0 0 0 1px #2a4a7a;
+}
+.standings-table .st-flag.flag-img { width: 18px; height: 13px; margin-right: 5px; vertical-align: -2px; }
 .bteam-name .bteam-name-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bteam-name.tbd { color: var(--text-muted-dim); font-style: italic; font-weight: 400; }
 .bteam-name.winner { color: #c9a84c; }
@@ -1029,31 +1061,61 @@ const ALL_MATCHES = [
 
 ];
 
-const FLAGS = { USA: '🇺🇸', Mexico: '🇲🇽', Canada: '🇨🇦' };
 const STAGE_ORDER = ['Group Stage', 'Round of 32', 'Round of 16', 'Quarterfinal', 'Semifinal', '3rd Place Match', 'FINAL'];
 
-/** National-team flags for schedule UI (not host country). */
-const TEAM_FLAGS = {
-  Mexico: '🇲🇽', 'South Africa': '🇿🇦', 'South Korea': '🇰🇷', Czechia: '🇨🇿',
-  Canada: '🇨🇦', Switzerland: '🇨🇭', Qatar: '🇶🇦', 'Bosnia & Herzegovina': '🇧🇦',
-  Brazil: '🇧🇷', Morocco: '🇲🇦', Haiti: '🇭🇹', Scotland: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-  USA: '🇺🇸', Paraguay: '🇵🇾', Australia: '🇦🇺', Turkiye: '🇹🇷',
-  Germany: '🇩🇪', Curacao: '🇨🇼', 'Ivory Coast': '🇨🇮', Ecuador: '🇪🇨',
-  Netherlands: '🇳🇱', Japan: '🇯🇵', Tunisia: '🇹🇳', Sweden: '🇸🇪',
-  Belgium: '🇧🇪', Egypt: '🇪🇬', Iran: '🇮🇷', 'New Zealand': '🇳🇿',
-  Spain: '🇪🇸', 'Cape Verde': '🇨🇻', 'Saudi Arabia': '🇸🇦', Uruguay: '🇺🇾',
-  France: '🇫🇷', Senegal: '🇸🇳', Norway: '🇳🇴', Iraq: '🇮🇶',
-  Argentina: '🇦🇷', Algeria: '🇩🇿', Austria: '🇦🇹', Jordan: '🇯🇴',
-  Portugal: '🇵🇹', Uzbekistan: '🇺🇿', Colombia: '🇨🇴', 'DR Congo': '🇨🇩',
-  England: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', Croatia: '🇭🇷', Ghana: '🇬🇭', Panama: '🇵🇦',
+/** Host country → flagcdn ISO code (lowercase). */
+const HOST_ISO = { USA: 'us', Mexico: 'mx', Canada: 'ca' };
+
+/** National team display name → flagcdn code (see https://flagcdn.com ) */
+const TEAM_ISO = {
+  Mexico: 'mx', 'South Africa': 'za', 'South Korea': 'kr', Czechia: 'cz',
+  Canada: 'ca', Switzerland: 'ch', Qatar: 'qa', 'Bosnia & Herzegovina': 'ba',
+  Brazil: 'br', Morocco: 'ma', Haiti: 'ht', Scotland: 'gb-sct',
+  USA: 'us', Paraguay: 'py', Australia: 'au', Turkiye: 'tr',
+  Germany: 'de', Curacao: 'cw', 'Ivory Coast': 'ci', Ecuador: 'ec',
+  Netherlands: 'nl', Japan: 'jp', Tunisia: 'tn', Sweden: 'se',
+  Belgium: 'be', Egypt: 'eg', Iran: 'ir', 'New Zealand': 'nz',
+  Spain: 'es', 'Cape Verde': 'cv', 'Saudi Arabia': 'sa', Uruguay: 'uy',
+  France: 'fr', Senegal: 'sn', Norway: 'no', Iraq: 'iq',
+  Argentina: 'ar', Algeria: 'dz', Austria: 'at', Jordan: 'jo',
+  Portugal: 'pt', Uzbekistan: 'uz', Colombia: 'co', 'DR Congo': 'cd',
+  England: 'gb-eng', Croatia: 'hr', Ghana: 'gh', Panama: 'pa',
 };
 
-function teamFlagEmoji(name) {
-  if (!name || typeof name !== 'string') return '🌐';
+function flagAttrEsc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function teamIsoFromName(name) {
+  if (!name || typeof name !== 'string') return null;
   var t = name.trim();
-  if (!t) return '🌐';
-  if (/^(Winner|Runner-up|Loser|Best|TBD)/.test(t)) return '🏆';
-  return TEAM_FLAGS[t] || '🌐';
+  if (!t) return null;
+  if (/^(Winner|Runner-up|Loser|Best|TBD)/.test(t)) return null;
+  return TEAM_ISO[t] || null;
+}
+
+/** Consistent PNG flags via flagcdn (works where emoji flags do not). */
+function teamFlagHtml(name, extraClass) {
+  var iso = teamIsoFromName(name);
+  var cls = 'flag-img' + (extraClass ? ' ' + extraClass : '');
+  if (!iso) {
+    var t = name && String(name).trim();
+    if (t && /^(Winner|Runner-up|Loser|Best|TBD)/.test(t)) {
+      return '<span class="' + cls + ' flag-img--ph" aria-hidden="true">🏆</span>';
+    }
+    return '<span class="' + cls + ' flag-img--ph" aria-hidden="true">?</span>';
+  }
+  var src = 'https://flagcdn.com/w40/' + iso + '.png';
+  return '<img class="' + cls + '" src="' + src + '" width="22" height="16" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" title="' + flagAttrEsc(name) + '">';
+}
+
+function hostFlagHtml(country) {
+  var iso = HOST_ISO[country];
+  if (!iso) {
+    return '<span class="flag-img flag-img--ph" aria-hidden="true">?</span>';
+  }
+  var src = 'https://flagcdn.com/w40/' + iso + '.png';
+  return '<img class="flag-img" src="' + src + '" width="22" height="16" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" title="' + flagAttrEsc(country) + '">';
 }
 
 function enrichMatchRecords() {
@@ -1062,9 +1124,9 @@ function enrichMatchRecords() {
     m.timeET = m.time;
     m.team1 = m.t1;
     m.team2 = m.t2;
-    m.team1Flag = teamFlagEmoji(m.t1);
-    m.team2Flag = teamFlagEmoji(m.t2);
-    m.hostFlag = FLAGS[m.country] || '🌐';
+    m.team1Flag = teamFlagHtml(m.t1, '');
+    m.team2Flag = teamFlagHtml(m.t2, '');
+    m.hostFlag = hostFlagHtml(m.country);
   });
 }
 
@@ -1075,8 +1137,8 @@ function validateMatchSchedule(matches) {
     if (!m.t2 || !String(m.t2).trim()) console.warn('[FIFA schedule validation] match', m.id, 'missing team2');
     if (!iso.test(m.date || '')) console.warn('[FIFA schedule validation] match', m.id, 'unusual date', m.date);
     if (m.time === '12:00 AM') console.warn('[FIFA schedule validation] match', m.id, 'midnight ET — verify on fifa.com', m.t1, 'v', m.t2);
-    if (!TEAM_FLAGS[m.t1] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t1))) console.warn('[FIFA schedule validation] no TEAM_FLAGS entry for', m.t1, '(match ' + m.id + ')');
-    if (!TEAM_FLAGS[m.t2] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t2))) console.warn('[FIFA schedule validation] no TEAM_FLAGS entry for', m.t2, '(match ' + m.id + ')');
+    if (!TEAM_ISO[m.t1] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t1))) console.warn('[FIFA schedule validation] no TEAM_ISO entry for', m.t1, '(match ' + m.id + ')');
+    if (!TEAM_ISO[m.t2] && !/^(Winner|Runner-up|Loser|Best|TBD)/.test(String(m.t2))) console.warn('[FIFA schedule validation] no TEAM_ISO entry for', m.t2, '(match ' + m.id + ')');
   });
   if (matches.length !== 104) console.warn('[FIFA schedule validation] expected 104 matches, got', matches.length);
   var hc = { USA: 0, Mexico: 0, Canada: 0 };
@@ -1614,7 +1676,12 @@ function populateScheduleFilters() {
         c=document.getElementById('countryFilter'), ci=document.getElementById('cityFilter');
   stages.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;s.appendChild(o);});
   groups.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent='Group '+x;g.appendChild(o);});
-  countries.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=(FLAGS[x]||'🌎')+' '+x;c.appendChild(o);});
+  countries.forEach(function (x) {
+    var o = document.createElement('option');
+    o.value = x;
+    o.textContent = x;
+    c.appendChild(o);
+  });
   cities.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;ci.appendChild(o);});
 }
 
@@ -1754,9 +1821,9 @@ function renderMyTicketsStrip() {
     return;
   }
   el.innerHTML = list.map(function (m) {
-    var hostF = FLAGS[m.country] || '🌎';
-    var f1 = teamFlagEmoji(m.t1);
-    var f2 = teamFlagEmoji(m.t2);
+    var hostF = hostFlagHtml(m.country);
+    var f1 = teamFlagHtml(m.t1, '');
+    var f2 = teamFlagHtml(m.t2, '');
     var qty = getTicketCount(m.id);
     return '<div class="ticket-pass" data-mid="' + m.id + '">' +
       '<div class="ticket-pass-top">' +
@@ -1773,9 +1840,9 @@ function renderMyTicketsStrip() {
       '<div class="ticket-pass-perf" aria-hidden="true"></div>' +
       '<button type="button" class="ticket-pass-main" onclick="scrollToMatchRow(' + m.id + ')" aria-label="Jump to match ' + m.id + '">' +
         '<div class="ticket-strip-teams">' +
-          '<span><span class="team-flag" aria-hidden="true">' + escHtml(f1) + '</span>' + escHtml(m.t1) + '</span>' +
+          '<span><span class="team-flag" aria-hidden="true">' + f1 + '</span>' + escHtml(m.t1) + '</span>' +
           '<span class="vs">vs</span>' +
-          '<span><span class="team-flag" aria-hidden="true">' + escHtml(f2) + '</span>' + escHtml(m.t2) + '</span>' +
+          '<span><span class="team-flag" aria-hidden="true">' + f2 + '</span>' + escHtml(m.t2) + '</span>' +
         '</div>' +
         '<div class="ticket-strip-foot">' +
           '<div class="ticket-strip-foot-row">' +
@@ -1848,7 +1915,7 @@ function renderSchedule() {
       <td class="hide-sm time-et-cell">${m.timeET || m.time}<span class="et-suffix">ET</span></td>
       <td><span class="badge ${badgeClass(m.stage)}">${m.stage}</span></td>
       <td>${grpCell}</td>
-      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team1Flag || teamFlagEmoji(m.t1)}</span>${escHtml(m.t1)}</td>
+      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team1Flag || teamFlagHtml(m.t1, '')}</span>${escHtml(m.t1)}</td>
       <td>
         <div class="score-wrap">
           <input class="score-inp" type="number" min="0" max="99" value="${s.t1??''}" placeholder="—"
@@ -1860,10 +1927,10 @@ function renderSchedule() {
             onchange="setScore(${m.id},'t2',this.value)" oninput="setScore(${m.id},'t2',this.value)">
         </div>
       </td>
-      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team2Flag || teamFlagEmoji(m.t2)}</span>${escHtml(m.t2)}</td>
+      <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team2Flag || teamFlagHtml(m.t2, '')}</span>${escHtml(m.t2)}</td>
       <td class="hide-sm" style="color:#8fa3c4;font-size:12px">${m.venue}</td>
       <td class="hide-sm">${m.city}</td>
-      <td>${FLAGS[m.country]||'🌎'} ${m.country}</td>
+      <td><span class="team-flag" aria-hidden="true">${m.hostFlag || hostFlagHtml(m.country)}</span>${escHtml(m.country)}</td>
       <td>
         <input class="comment-inp" type="text" placeholder="Add note…"
           value="${(cm[m.id]||'').replace(/"/g,'&quot;')}"
@@ -1888,9 +1955,9 @@ function updateStatsBar() {
   document.getElementById('statsBar').innerHTML=`
     <div class="stat-card"><div class="sn">${filtered.length}</div><div class="sl">Matches</div></div>
     <div class="stat-card"><div class="sn" style="font-size:17px">${savedMatchCount}<span style="color:var(--text-muted);font-weight:600"> / </span>${ticketQtyTotal}</div><div class="sl">Tickets (matches / qty)</div></div>
-    <div class="stat-card"><div class="sn">🇺🇸 ${usa}</div><div class="sl">USA Games</div></div>
-    <div class="stat-card"><div class="sn">🇲🇽 ${mex}</div><div class="sl">Mexico Games</div></div>
-    <div class="stat-card"><div class="sn">🇨🇦 ${can}</div><div class="sl">Canada Games</div></div>
+    <div class="stat-card"><div class="sn"><img class="flag-img flag-img--stat" src="https://flagcdn.com/w40/us.png" width="20" height="15" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"> ${usa}</div><div class="sl">USA Games</div></div>
+    <div class="stat-card"><div class="sn"><img class="flag-img flag-img--stat" src="https://flagcdn.com/w40/mx.png" width="20" height="15" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"> ${mex}</div><div class="sl">Mexico Games</div></div>
+    <div class="stat-card"><div class="sn"><img class="flag-img flag-img--stat" src="https://flagcdn.com/w40/ca.png" width="20" height="15" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"> ${can}</div><div class="sl">Canada Games</div></div>
     <div class="stat-card"><div class="sn">${venues}</div><div class="sl">Venues</div></div>
     <div class="stat-card"><div class="sn" style="color:#50d09a">${played}</div><div class="sl">Played</div></div>`;
 }
@@ -1995,7 +2062,7 @@ function buildGroupCard(g) {
     const cls = i<2 ? 'qualifier' : (i===2 ? 'third-place' : '');
     const gdStr = s.gd>0?`<span class="gd-pos">+${s.gd}</span>`:s.gd<0?`<span class="gd-neg">${s.gd}</span>`:`<span>0</span>`;
     return `<tr class="${cls}">
-      <td><span class="team-flag st-flag" aria-hidden="true">${teamFlagEmoji(s.team)}</span>${s.team}</td>
+      <td><span class="team-flag st-flag" aria-hidden="true">${teamFlagHtml(s.team, 'st-flag')}</span>${s.team}</td>
       <td>${s.mp}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td>
       <td>${s.gf}</td><td>${s.ga}</td><td>${gdStr}</td>
       <td class="pts-cell">${s.pts}</td>
@@ -2006,7 +2073,7 @@ function buildGroupCard(g) {
     const sc=SCORES[m.id]||{t1:'',t2:''};
     return `<div class="group-match-row">
       <span class="gm-date">${m.date.slice(5)}</span>
-      <span class="gm-team"><span class="team-flag" aria-hidden="true">${teamFlagEmoji(m.t1)}</span>${m.t1}</span>
+      <span class="gm-team"><span class="team-flag" aria-hidden="true">${teamFlagHtml(m.t1, '')}</span>${m.t1}</span>
       <div class="gm-score">
         <input class="gm-score-inp" type="number" min="0" max="99"
           data-id="${m.id}" data-side="t1" value="${sc.t1??''}" placeholder="—">
@@ -2014,7 +2081,7 @@ function buildGroupCard(g) {
         <input class="gm-score-inp" type="number" min="0" max="99"
           data-id="${m.id}" data-side="t2" value="${sc.t2??''}" placeholder="—">
       </div>
-      <span class="gm-team right"><span class="team-flag" aria-hidden="true">${teamFlagEmoji(m.t2)}</span>${m.t2}</span>
+      <span class="gm-team right"><span class="team-flag" aria-hidden="true">${teamFlagHtml(m.t2, '')}</span>${m.t2}</span>
     </div>`;
   }).join('');
 
@@ -2108,7 +2175,7 @@ function buildBracketMatch(mid) {
   const t2tbd = t2resolved === null;
 
   const fmt = name => name.length > 19 ? name.slice(0, 18) + '…' : name;
-  const line = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + escHtml(teamFlagEmoji(nm)) + '</span><span class="bteam-name-text">' + escHtml(fmt(nm)) + '</span>';
+  const line = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + teamFlagHtml(nm, 'bracket-flag') + '</span><span class="bteam-name-text">' + escHtml(fmt(nm)) + '</span>';
 
   return `<div class="bmatch">
     <div class="bmatch-num">M${mid} · ${m.date.slice(5)} · ${m.timeET || m.time} ET · ${m.city}</div>
@@ -2258,7 +2325,7 @@ function buildFinalTeams(mid) {
   const t2name = t2resolved || m.t2;
   const t1win = sc.t1 != null && sc.t2 != null && sc.t1 > sc.t2;
   const t2win = sc.t1 != null && sc.t2 != null && sc.t2 > sc.t1;
-  const finLine = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + escHtml(teamFlagEmoji(nm)) + '</span><span class="bteam-name-text">' + escHtml(nm) + '</span>';
+  const finLine = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + teamFlagHtml(nm, 'bracket-flag') + '</span><span class="bteam-name-text">' + escHtml(nm) + '</span>';
   return `<div class="bteam">
     <span class="bteam-name ${t1win ? 'winner' : ''} ${t1resolved === null ? 'tbd' : ''}" title="${escHtml(m.t1)}">${finLine(t1name)}</span>
     <input class="bscore" type="number" min="0" value="${sc.t1 ?? ''}" placeholder="—"

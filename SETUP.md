@@ -41,6 +41,10 @@ Open `http://localhost:8080`.
 
 Anonymous policies on `fifa_rooms` mean anyone with your anon key (visible in the static bundle) can read/write. Use only for casual pools; do not store sensitive data.
 
+## Country / team flags
+
+Schedule, bracket, and tickets use **PNG flags** from [flagcdn.com](https://flagcdn.com) (ISO codes in `index.html`), so they look the same on Windows, older browsers, and networks where **emoji flag sequences** do not render. The page loads small images from that CDN (allow `img-src` if you add a strict Content-Security-Policy).
+
 ## Match schedule source
 
 Group-stage and knockout pairings are rebuilt from the post–draw schedule (see `scripts/schedule-source.txt` and `scripts/build-schedule.mjs`). Kickoffs are stored and shown as **US Eastern Time (ET)**. See `scripts/SCHEDULE_VERIFICATION.md` for how to verify data against [fifa.com](https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026) before travel.
