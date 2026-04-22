@@ -26,9 +26,16 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
-/* STATS BAR */
-.stats-bar { display: flex; gap: 12px; padding: 14px 32px; background: #0d1f40; border-bottom: 1px solid #1e3358; flex-wrap: wrap; }
-.stat-card { background: #122040; border: 1px solid #1e3a6e; border-radius: 10px; padding: 8px 18px; text-align: center; min-width: 100px; }
+/* STATS BAR — wrap to new rows instead of horizontal scroll */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 108px), 1fr));
+  gap: 10px;
+  padding: 14px 32px;
+  background: #0d1f40;
+  border-bottom: 1px solid #1e3358;
+}
+.stat-card { background: #122040; border: 1px solid #1e3a6e; border-radius: 10px; padding: 7px 10px; text-align: center; min-width: 0; }
 .stat-card .sn { font-size: 22px; font-weight: 800; color: #c9a84c; }
 .stat-card .sl { font-size: 10px; color: #6a88b0; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
@@ -57,15 +64,11 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   color: #6a88b0;
 }
 .my-tickets-strip {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 10px;
+  align-items: start;
 }
-.my-tickets-strip::-webkit-scrollbar { height: 6px; }
-.my-tickets-strip::-webkit-scrollbar-thumb { background: #1e3a6e; border-radius: 3px; }
 .my-tickets-empty {
   font-size: 13px;
   color: #6a88b0;
@@ -76,40 +79,46 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
   text-align: center;
   line-height: 1.45;
 }
-/* Ticket “pass” cards — stub left edge + subtle glow */
+/* Ticket “pass” cards — compact, wrap in grid (no horizontal strip scroll) */
 .ticket-pass {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  position: relative;
-  min-width: 248px;
-  max-width: 310px;
+  min-width: 0;
+  width: 100%;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px solid rgba(42, 74, 122, 0.95);
-  border-left: 4px solid #c9a84c;
+  border-left: 3px solid #c9a84c;
   background: linear-gradient(165deg, #162d52 0%, #0c182c 50%, #0a1424 100%);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  transition: border-color 0.22s, box-shadow 0.22s, transform 0.18s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 .ticket-pass:hover {
-  border-color: rgba(201, 168, 76, 0.55);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(201, 168, 76, 0.12), 0 0 24px rgba(201, 168, 76, 0.08);
-  transform: translateY(-3px);
+  border-color: rgba(201, 168, 76, 0.5);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 168, 76, 0.1);
+  transform: translateY(-1px);
+}
+.ticket-pass-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px 0;
+  font-size: 10px;
+  color: #8fa3c4;
 }
 .ticket-pass-perf {
-  height: 5px;
-  margin: 10px 12px 0;
+  height: 2px;
+  margin: 5px 8px 0;
   border-radius: 2px;
-  opacity: 0.45;
-  background: repeating-linear-gradient(90deg, #2a4566 0 5px, transparent 5px 10px);
+  opacity: 0.4;
+  background: repeating-linear-gradient(90deg, #2a4566 0 4px, transparent 4px 8px);
 }
 .ticket-pass-main {
   display: block;
   width: 100%;
-  padding: 10px 14px 40px;
+  padding: 6px 10px 8px;
   margin: 0;
   border: none;
-  border-radius: 14px;
+  border-radius: 10px;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -120,66 +129,64 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 .ticket-pass-main:focus-visible {
   box-shadow: inset 0 0 0 2px rgba(201, 168, 76, 0.5);
 }
-.ticket-strip-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 11px;
-  color: #8fa3c4;
-}
 .ticket-strip-date {
   font-weight: 700;
   color: #f2f6ff;
   letter-spacing: 0.02em;
+  min-width: 0;
+  flex: 1;
 }
-.ticket-strip-icon { font-size: 18px; line-height: 1; filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.35)); }
+.ticket-meta-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.ticket-mini { font-size: 11px; line-height: 1; opacity: 0.85; }
 .ticket-strip-teams {
-  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 12px;
   font-weight: 700;
   color: #fafcff;
-  line-height: 1.45;
-  margin-top: 6px;
+  line-height: 1.3;
+  margin-top: 4px;
 }
 .ticket-strip-teams .vs {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  color: #7a93b8;
+  color: #6a88b0;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 .ticket-strip-foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  font-size: 10px;
+  gap: 4px 8px;
+  font-size: 9px;
   color: #7a93b8;
-  margin-top: 8px;
+  margin-top: 5px;
 }
 .ticket-qty-wrap {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 4px;
+  gap: 1px;
+  padding: 1px 3px;
   border-radius: 999px;
-  background: rgba(10, 22, 40, 0.92);
-  border: 1px solid rgba(201, 168, 76, 0.35);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  background: rgba(10, 22, 40, 0.95);
+  border: 1px solid rgba(201, 168, 76, 0.3);
 }
 .ticket-qty-btn {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border: none;
   border-radius: 50%;
   background: #1a3358;
   color: #c9a84c;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -190,9 +197,9 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a1628; color: #
 }
 .ticket-qty-btn:hover { background: #243d68; color: #f0d070; }
 .ticket-qty-val {
-  min-width: 22px;
+  min-width: 18px;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   color: #e8f0ff;
 }
@@ -371,12 +378,12 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   .tab-nav::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 12px 18px; font-size: 12px; flex-shrink: 0; }
 
-  /* Stats bar */
-  .stats-bar { padding: 10px 14px; gap: 8px; }
+  /* Stats + My tickets — stack in one column on narrow screens */
+  .stats-bar { padding: 10px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .my-tickets-section { padding: 14px; }
-  .ticket-pass { min-width: 210px; max-width: 100%; }
-  .stat-card { min-width: 80px; padding: 6px 12px; flex: 1; }
-  .stat-card .sn { font-size: 18px; }
+  .my-tickets-strip { grid-template-columns: 1fr; gap: 8px; }
+  .stat-card { padding: 6px 8px; }
+  .stat-card .sn { font-size: 17px; }
   .stat-card .sl { font-size: 9px; }
 
   /* Filters — 2-column grid */
@@ -456,7 +463,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <section class="my-tickets-section" aria-labelledby="myTicketsHeading">
     <div class="my-tickets-head">
       <h2 id="myTicketsHeading">🎫 My tickets</h2>
-      <span class="my-tickets-sub">Matches you marked below (kickoffs in ET). Click the card body to jump to that row — filters clear so it is visible. Use +/− for how many tickets you hold.</span>
+      <span class="my-tickets-sub">Matches you marked (ET). Cards wrap below — click a card to jump to that row; +/− adjusts how many tickets you hold.</span>
     </div>
     <div id="myTicketsStrip" class="my-tickets-strip"></div>
   </section>
@@ -1170,15 +1177,22 @@ function renderMyTicketsStrip() {
     var f2 = teamFlagEmoji(m.t2);
     var qty = getTicketCount(m.id);
     return '<div class="ticket-pass" data-mid="' + m.id + '">' +
+      '<div class="ticket-pass-top">' +
+        '<span class="ticket-strip-date">' + escHtml(m.date) + (m.day ? ' · ' + escHtml(m.day) : '') + '</span>' +
+        '<div class="ticket-meta-actions" onclick="event.stopPropagation()">' +
+          '<span class="ticket-mini" aria-hidden="true">🎫</span>' +
+          '<div class="ticket-qty-wrap" role="group" aria-label="Tickets for this match">' +
+            '<button type="button" class="ticket-qty-btn" aria-label="Decrease ticket count" onclick="adjustTicketCount(' + m.id + ',-1)">−</button>' +
+            '<span class="ticket-qty-val" title="Tickets held">×' + qty + '</span>' +
+            '<button type="button" class="ticket-qty-btn" aria-label="Increase ticket count" onclick="adjustTicketCount(' + m.id + ',1)">+</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
       '<div class="ticket-pass-perf" aria-hidden="true"></div>' +
       '<button type="button" class="ticket-pass-main" onclick="scrollToMatchRow(' + m.id + ')" aria-label="Jump to match ' + m.id + '">' +
-        '<div class="ticket-strip-meta">' +
-          '<span class="ticket-strip-date">' + escHtml(m.date) + (m.day ? ' · ' + escHtml(m.day) : '') + '</span>' +
-          '<span class="ticket-strip-icon" aria-hidden="true">🎫</span>' +
-        '</div>' +
         '<div class="ticket-strip-teams">' +
           '<span><span class="team-flag" aria-hidden="true">' + escHtml(f1) + '</span>' + escHtml(m.t1) + '</span>' +
-          '<span class="vs"> vs </span>' +
+          '<span class="vs">vs</span>' +
           '<span><span class="team-flag" aria-hidden="true">' + escHtml(f2) + '</span>' + escHtml(m.t2) + '</span>' +
         '</div>' +
         '<div class="ticket-strip-foot">' +
@@ -1188,11 +1202,6 @@ function renderMyTicketsStrip() {
           '<span>#' + m.id + '</span>' +
         '</div>' +
       '</button>' +
-      '<div class="ticket-qty-wrap" role="group" aria-label="Tickets for this match" onclick="event.stopPropagation()">' +
-        '<button type="button" class="ticket-qty-btn" aria-label="Decrease ticket count" onclick="adjustTicketCount(' + m.id + ',-1)">−</button>' +
-        '<span class="ticket-qty-val" title="Tickets held">×' + qty + '</span>' +
-        '<button type="button" class="ticket-qty-btn" aria-label="Increase ticket count" onclick="adjustTicketCount(' + m.id + ',1)">+</button>' +
-      '</div>' +
     '</div>';
   }).join('');
 }
