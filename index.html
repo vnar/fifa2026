@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIFA 2026 Dashboard</title>
-<meta name="description" content="FIFA World Cup 2026 — schedule (ET), tickets, group tables, and knockout bracket.">
+<meta name="description" content="FIFA World Cup 2026 — schedule (US Eastern EST/EDT), tickets, group tables, and knockout bracket.">
 <meta property="og:title" content="FIFA World Cup 2026 Dashboard">
-<meta property="og:description" content="Match schedule, tickets, group tables, and bracket — Eastern Time (ET).">
+<meta property="og:description" content="Match schedule, tickets, group tables, and bracket — US Eastern (EST/EDT by date).">
 <meta property="og:type" content="website">
 <meta property="og:image" content="og-image.svg">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -835,7 +835,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <div>
     <h1>FIFA World Cup 2026</h1>
     <p>Match schedule from the post–draw pairings — verify kickoffs at <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/matches" style="color:#8fa3c4" target="_blank" rel="noopener">fifa.com</a> before travel.</p>
-    <p class="header-et-note">Match times shown in <strong>Eastern Time (ET)</strong> (US Eastern, including EST/EDT by date). Verify against fifa.com before travel.</p>
+    <p class="header-et-note">Match kickoffs are <strong>US Eastern</strong> with a per-match <strong>EST</strong> or <strong>EDT</strong> label (daylight saving: June–July 2026 is <strong>EDT</strong>). Verify against fifa.com before travel.</p>
   </div>
 </div>
 
@@ -851,7 +851,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
   <section class="my-tickets-section" aria-labelledby="myTicketsHeading">
     <div class="my-tickets-head">
       <h2 id="myTicketsHeading">🎫 My tickets</h2>
-      <span class="my-tickets-sub">Matches you marked (ET). Scroll sideways for more cards — click a card to jump to that row; +/− adjusts how many tickets you hold.</span>
+      <span class="my-tickets-sub">Matches you marked (US Eastern, EST/EDT). Scroll sideways for more cards — click a card to jump to that row; +/− adjusts how many tickets you hold.</span>
     </div>
     <div class="my-tickets-scroll-wrap" id="myTicketsScrollWrap">
       <div id="myTicketsStrip" class="my-tickets-strip"></div>
@@ -900,7 +900,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
           <th title="Ticket bought — highlights the row">🎫</th>
           <th onclick="sortTable('Date')">Date ↕</th>
           <th class="hide-sm" onclick="sortTable('Day')">Day ↕</th>
-          <th class="hide-sm" onclick="sortTable('Time (ET)')">Time ↕</th>
+          <th class="hide-sm" onclick="sortTable('Time (ET)')" title="Kickoff in US Eastern — EST or EDT for that calendar date">Time (EST/EDT) ↕</th>
           <th onclick="sortTable('Stage')">Stage ↕</th>
           <th onclick="sortTable('Group')">Grp ↕</th>
           <th onclick="sortTable('Team 1')">Team 1 ↕</th>
@@ -1016,7 +1016,7 @@ tbody td { padding: 9px 12px; color: #d0dcee; white-space: nowrap; vertical-alig
 </script>
 <script>
 // ============================================================
-//  DATA — kickoffs are U.S. Eastern Time (ET). Curated; verify at fifa.com (see scripts/SCHEDULE_VERIFICATION.md).
+//  DATA — kickoffs are US Eastern; each row shows EST or EDT for that date. Curated; verify at fifa.com (see scripts/SCHEDULE_VERIFICATION.md).
 // ============================================================
 const ALL_MATCHES = [
 {id:1,date:"2026-06-11",day:"Thu",time:"3:00 PM",stage:"Group Stage",group:"A",t1:"Mexico",t2:"South Africa",venue:"Estadio Azteca",city:"Mexico City",country:"Mexico"},
@@ -1183,10 +1183,33 @@ function hostFlagHtml(country) {
   return '<img class="flag-img" src="' + src + '" width="22" height="16" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" title="' + flagAttrEsc(country) + '">';
 }
 
+/** US Eastern zone abbreviation for a calendar date (EST vs EDT). Uses America/New_York. */
+function easternTzAbbr(isoDate) {
+  if (!isoDate || typeof isoDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return 'ET';
+  try {
+    var d = new Date(isoDate + 'T16:00:00Z');
+    var parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      timeZoneName: 'short',
+    }).formatToParts(d);
+    var tz = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') tz = parts[i].value || '';
+    }
+    if (tz === 'EDT' || tz === 'EST') return tz;
+    if (tz === 'GMT-4' || tz === 'GMT-5') return tz === 'GMT-4' ? 'EDT' : 'EST';
+    if (/EDT|EST/.test(tz)) return /EDT/.test(tz) ? 'EDT' : 'EST';
+  } catch (e) {}
+  var mo = parseInt(isoDate.slice(5, 7), 10);
+  if (mo >= 4 && mo <= 10) return 'EDT';
+  return 'EST';
+}
+
 function enrichMatchRecords() {
   ALL_MATCHES.forEach(function (m) {
     m.matchNumber = m.id;
     m.timeET = m.time;
+    m.easternAbbr = easternTzAbbr(m.date);
     m.team1 = m.t1;
     m.team2 = m.t2;
     m.team1Flag = teamFlagHtml(m.t1, '');
@@ -1954,7 +1977,7 @@ function renderMyTicketsStrip() {
         '<div class="ticket-strip-foot">' +
           '<div class="ticket-strip-foot-row">' +
             '<span class="badge ' + badgeClass(m.stage) + '">' + escHtml(m.stage) + '</span>' +
-            '<span class="ticket-strip-meta-time">' + escHtml(m.timeET || m.time || '') + ' ET' + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
+            '<span class="ticket-strip-meta-time">' + escHtml(m.timeET || m.time || '') + ' ' + escHtml(m.easternAbbr || 'ET') + (m.city ? ' · ' + escHtml(m.city) : '') + '</span>' +
           '</div>' +
           '<div class="ticket-strip-foot-row">' +
             '<span class="ticket-strip-host">' + hostF + ' ' + escHtml(m.country) + '</span>' +
@@ -1997,7 +2020,7 @@ function renderSchedule() {
   });
   const tbody=document.getElementById('tableBody');
   const noR=document.getElementById('noResults');
-  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches <span style="color:var(--text-muted);font-weight:500">· times Eastern (ET)</span>`;
+  document.getElementById('resultsInfo').innerHTML=`Showing <span>${data.length}</span> of <span>${ALL_MATCHES.length}</span> matches <span style="color:var(--text-muted);font-weight:500">· kickoffs US Eastern (EST/EDT per date)</span>`;
   if(!data.length){
     tbody.innerHTML='';
     noR.style.display='block';
@@ -2019,7 +2042,7 @@ function renderSchedule() {
       <td class="td-ticket"><input type="checkbox" class="ticket-cb" id="ticket-${m.id}" name="ticket_${m.id}" aria-label="I have a ticket for this match"${tick} onchange="setBought(${m.id},this.checked)"></td>
       <td>${m.date}</td>
       <td class="hide-sm">${m.day}</td>
-      <td class="hide-sm time-et-cell">${m.timeET || m.time}<span class="et-suffix">ET</span></td>
+      <td class="hide-sm time-et-cell">${m.timeET || m.time}<span class="et-suffix">${m.easternAbbr || 'ET'}</span></td>
       <td><span class="badge ${badgeClass(m.stage)}">${m.stage}</span></td>
       <td>${grpCell}</td>
       <td class="team-cell"><span class="team-flag" aria-hidden="true">${m.team1Flag || teamFlagHtml(m.t1, '')}</span>${escHtml(m.t1)}</td>
@@ -2285,7 +2308,7 @@ function buildBracketMatch(mid) {
   const line = (nm) => '<span class="team-flag bracket-flag" aria-hidden="true">' + teamFlagHtml(nm, 'bracket-flag') + '</span><span class="bteam-name-text">' + escHtml(fmt(nm)) + '</span>';
 
   return `<div class="bmatch">
-    <div class="bmatch-num">M${mid} · ${m.date.slice(5)} · ${m.timeET || m.time} ET · ${m.city}</div>
+    <div class="bmatch-num">M${mid} · ${m.date.slice(5)} · ${m.timeET || m.time} ${m.easternAbbr || 'ET'} · ${m.city}</div>
     <div class="bteam">
       <span class="bteam-name ${t1win ? 'winner' : ''} ${t1tbd ? 'tbd' : ''}" title="${escHtml(m.t1)}">${line(t1name)}</span>
       <input class="bscore" type="number" min="0" max="99" value="${sc.t1 ?? ''}" placeholder="—"
